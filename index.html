@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Firearm Catalog Pro</title>
+<style>
+:root{
+ --bg:#eef1f5;--surface:#fff;--surface2:#f8fafc;--text:#101828;--muted:#667085;
+ --border:#d0d5dd;--brand:#1d4ed8;--brand2:#163ea8;--danger:#b42318;--success:#067647;
+ --warning:#b54708;--header:#111827;--shadow:0 4px 18px rgba(16,24,40,.10)
+}
+body.dark{
+ --bg:#0f172a;--surface:#111827;--surface2:#1f2937;--text:#f9fafb;--muted:#cbd5e1;
+ --border:#475569;--brand:#3b82f6;--brand2:#2563eb;--header:#020617;--shadow:0 4px 18px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{
+ position:sticky;top:0;z-index:30;background:var(--header);color:#fff;padding:max(14px,env(safe-area-inset-top)) 14px 12px;
+ box-shadow:0 2px 10px rgba(0,0,0,.25)
+}
+.headerrow{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1100px;margin:auto}
+.brand h1{margin:0;font-size:22px}.brand small{color:#cbd5e1}
+.iconbtn{width:44px;height:44px;border:0;border-radius:12px;background:#273449;color:#fff;font-size:20px}
+nav{position:sticky;top:76px;z-index:25;background:var(--surface);border-bottom:1px solid var(--border);overflow:auto;white-space:nowrap}
+.navinner{max-width:1100px;margin:auto;display:flex}
+.navbtn{width:auto;border:0;background:transparent;color:var(--muted);padding:13px 15px;font-weight:750;border-bottom:3px solid transparent}
+.navbtn.active{color:var(--brand);border-bottom-color:var(--brand)}
+main{max-width:1100px;margin:auto;padding:14px 12px 90px}
+.view{display:none}.view.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+h2,h3{margin:0 0 10px}
+.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:700px){.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(min-width:760px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+.stat strong{display:block;font-size:24px}
+label{display:block;margin-top:9px;font-weight:750;font-size:14px}
+input,select,textarea{
+ width:100%;padding:12px;border-radius:11px;border:1px solid var(--border);background:var(--surface);
+ color:var(--text);margin-top:6px
+}
+textarea{resize:vertical}
+.btn{width:100%;border:0;border-radius:11px;padding:12px;font-weight:800;background:var(--brand);color:#fff;margin-top:8px}
+.btn:hover{background:var(--brand2)}
+.btn.secondary{background:#475467}.btn.danger{background:var(--danger)}.btn.success{background:var(--success)}.btn.warning{background:var(--warning)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.item{border:1px solid var(--border);border-radius:15px;padding:13px;margin-top:11px;background:var(--surface2)}
+.itemhead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.item h3{margin:4px 0}
+.thumb{width:92px;height:70px;object-fit:cover;border-radius:10px;border:1px solid var(--border);flex:0 0 auto}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.gallery img{width:100%;height:95px;object-fit:cover;border-radius:9px;border:1px solid var(--border)}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e4e7ec;color:#344054;font-size:12px;margin:0 5px 6px 0}
+body.dark .pill{background:#334155;color:#e2e8f0}
+.pill.favorite{background:#fef0c7;color:#7a2e0e}
+.subcard{padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--surface);margin-top:7px}
+.notice{padding:11px;border-radius:11px;background:#eff8ff;color:#1849a9;border:1px solid #84caff}
+body.dark .notice{background:#172554;color:#bfdbfe;border-color:#1d4ed8}
+.warningbox{padding:11px;border-radius:11px;background:#fffaeb;color:#93370d;border:1px solid #fedf89}
+body.dark .warningbox{background:#422006;color:#fde68a;border-color:#92400e}
+.fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;border:0;background:var(--brand);color:#fff;font-size:32px;box-shadow:0 8px 24px rgba(0,0,0,.28);z-index:40}
+dialog{width:min(96vw,820px);max-height:92vh;border:0;border-radius:18px;padding:0;background:var(--surface);color:var(--text);box-shadow:0 25px 70px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.modal{padding:15px;overflow:auto;max-height:92vh}
+.modalhead{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-15px;background:var(--surface);padding:12px 0;z-index:3}
+.close{width:auto;border:0;border-radius:9px;padding:9px 12px;background:#475467;color:#fff}
+.hidden{display:none!important}
+.inline{width:auto;display:inline-block;padding:8px 11px;margin-right:6px}
+.tablewrap{overflow:auto}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
+.lock{max-width:440px;margin:35px auto}
+</style>
+</head>
+<body>
+<header>
+ <div class="headerrow">
+  <div class="brand"><h1>Firearm Catalog Pro</h1><small>Private on-device inventory</small></div>
+  <div>
+   <button class="iconbtn" id="themeBtn" aria-label="Toggle dark mode">◐</button>
+   <button class="iconbtn" id="lockBtn" aria-label="Lock app">🔒</button>
+  </div>
+ </div>
+</header>
+<nav>
+ <div class="navinner">
+  <button class="navbtn active" data-view="dashboard">Dashboard</button>
+  <button class="navbtn" data-view="inventory">Inventory</button>
+  <button class="navbtn" data-view="safemap">Safe Map</button>
+  <button class="navbtn" data-view="maintenance">Maintenance</button>
+  <button class="navbtn" data-view="wishlist">Wishlist</button>
+  <button class="navbtn" data-view="reports">Backup & Reports</button>
+  <button class="navbtn" data-view="settings">Settings</button>
+ </div>
+</nav>
+
+<main id="appMain">
+<section class="view active" id="dashboard">
+ <div class="card">
+  <h2>Dashboard</h2>
+  <div class="stats">
+   <div class="stat"><strong id="dItems">0</strong>Firearms</div>
+   <div class="stat"><strong id="dAccessories">0</strong>Accessories</div>
+   <div class="stat"><strong id="dValue">$0</strong>Recorded Value</div>
+   <div class="stat"><strong id="dMaintenance">0</strong>Maintenance Entries</div>
+  </div>
+ </div>
+ <div class="card">
+  <h2>Recently Updated</h2>
+  <div id="recentList" class="muted">No items yet.</div>
+ </div>
+ <div class="card">
+  <h2>Quick Notes</h2>
+  <div class="notice">Your inventory and photos remain in this browser on this device. Export a backup after adding or changing important records.</div>
+ </div>
+</section>
+
+<section class="view" id="inventory">
+ <div class="card">
+  <h2>Search & Filter</h2>
+  <div class="grid3">
+   <input id="searchInput" placeholder="Search make, model, serial, caliber, notes...">
+   <select id="filterType"><option value="">All types</option><option>Rifle</option><option>Pistol</option><option>Shotgun</option><option>Revolver</option><option>Suppressor</option><option>Receiver</option><option>Other</option></select>
+   <select id="sortInventory"><option value="updated">Recently updated</option><option value="name">Name A–Z</option><option value="type">Type</option><option value="value">Highest value</option></select>
+  </div>
+ </div>
+ <div class="card"><div class="itemhead"><h2>Inventory</h2><span id="inventoryCount" class="muted"></span></div><div id="inventoryList"></div></div>
+</section>
+
+<section class="view" id="safemap">
+ <div class="card"><h2>Safe Map</h2><p class="muted">Items are grouped by the storage location entered on each record.</p><div id="safeMapList"></div></div>
+</section>
+
+<section class="view" id="maintenance">
+ <div class="card">
+  <h2>Add Maintenance Entry</h2>
+  <div class="grid3">
+   <div><label>Firearm</label><select id="maintItem"></select></div>
+   <div><label>Date</label><input id="maintDate" type="date"></div>
+   <div><label>Round Count</label><input id="maintRounds" type="number" min="0"></div>
+  </div>
+  <label>Work Performed</label><input id="maintWork" placeholder="Cleaning, inspection, part replacement...">
+  <label>Notes</label><textarea id="maintNotes" rows="3"></textarea>
+  <button class="btn success" id="addMaintBtn">Save Maintenance Entry</button>
+ </div>
+ <div class="card"><h2>Maintenance History</h2><div id="maintenanceList"></div></div>
+</section>
+
+<section class="view" id="wishlist">
+ <div class="card">
+  <h2>Add Wishlist Item</h2>
+  <div class="grid3">
+   <div><label>Category</label><select id="wishCategory"><option>Firearm</option><option>Accessory</option><option>Upgrade</option><option>Other</option></select></div>
+   <div><label>Name</label><input id="wishName" placeholder="Make and model"></div>
+   <div><label>Target Price</label><input id="wishPrice" type="number" min="0" step="0.01"></div>
+  </div>
+  <div class="grid2">
+   <div><label>Store / Source</label><input id="wishStore"></div>
+   <div><label>Priority</label><select id="wishPriority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+  </div>
+  <label>Notes</label><textarea id="wishNotes" rows="3"></textarea>
+  <button class="btn success" id="addWishBtn">Add to Wishlist</button>
+ </div>
+ <div class="card"><h2>Wishlist</h2><div id="wishlistList"></div></div>
+</section>
+
+<section class="view" id="reports">
+ <div class="card">
+  <h2>Backup & Restore</h2>
+  <div class="actions">
+   <button class="btn success" id="exportBtn">Export Full Backup</button>
+   <button class="btn secondary" id="printBtn">Print / Save PDF</button>
+  </div>
+  <label>Import backup</label><input id="importFile" type="file" accept=".json,application/json">
+  <div class="warningbox" style="margin-top:10px">Importing replaces the information currently stored in this app.</div>
+ </div>
+ <div class="card"><h2>Inventory Report</h2><div class="tablewrap"><table><thead><tr><th>Type</th><th>Make / Model</th><th>Serial</th><th>Caliber</th><th>Location</th><th>Value</th></tr></thead><tbody id="reportBody"></tbody></table></div></div>
+</section>
+
+<section class="view" id="settings">
+ <div class="card">
+  <h2>Privacy Lock</h2>
+  <p class="muted">This is a local PIN screen. It prevents casual access but is not the same as native Face ID or full encryption.</p>
+  <label>New 4–8 digit PIN</label><input id="newPin" type="password" inputmode="numeric" maxlength="8">
+  <button class="btn" id="savePinBtn">Set or Change PIN</button>
+  <button class="btn danger" id="removePinBtn">Remove PIN</button>
+ </div>
+ <div class="card">
+  <h2>Appearance</h2>
+  <button class="btn secondary" id="themeSettingsBtn">Toggle Light / Dark Mode</button>
+ </div>
+ <div class="card">
+  <h2>About This Version</h2>
+  <p>Version 2.0 includes inventory, multiple photos, accessories, maintenance history, safe map, wishlist, search, reports, local PIN lock, backups, dark mode, and offline support.</p>
+  <div class="warningbox">Cloud syncing and native Face ID require a secure backend or a native iPhone app. They are not included in this static GitHub Pages version.</div>
+ </div>
+</section>
+</main>
+
+<button class="fab" id="addItemFab" aria-label="Add firearm">+</button>
+
+<dialog id="itemDialog"><div class="modal">
+ <div class="modalhead"><h2 id="itemFormTitle">Add Firearm</h2><button class="close" id="closeItemDialog">Close</button></div>
+ <input id="editItemId" type="hidden">
+ <div class="grid3">
+  <div><label>Type *</label><select id="fType"><option value="">Select</option><option>Rifle</option><option>Pistol</option><option>Shotgun</option><option>Revolver</option><option>Suppressor</option><option>Receiver</option><option>Other</option></select></div>
+  <div><label>Make *</label><input id="fMake"></div>
+  <div><label>Model *</label><input id="fModel"></div>
+ </div>
+ <div class="grid3">
+  <div><label>Serial Number *</label><input id="fSerial" autocapitalize="characters"></div>
+  <div><label>Caliber / Gauge</label><input id="fCaliber"></div>
+  <div><label>Condition</label><select id="fCondition"><option value="">Optional</option><option>New</option><option>Excellent</option><option>Very Good</option><option>Good</option><option>Fair</option></select></div>
+ </div>
+ <div class="grid3">
+  <div><label>Purchase Date</label><input id="fPurchaseDate" type="date"></div>
+  <div><label>Purchase Price</label><input id="fPurchasePrice" type="number" min="0" step="0.01"></div>
+  <div><label>Estimated Value</label><input id="fEstimatedValue" type="number" min="0" step="0.01"></div>
+ </div>
+ <div class="grid2">
+  <div><label>Storage Location</label><input id="fLocation" placeholder="Safe 1 / Shelf A"></div>
+  <div><label>Next Upgrade</label><input id="fUpgrade"></div>
+ </div>
+ <div class="grid2">
+  <div><label>Favorite</label><select id="fFavorite"><option value="false">No</option><option value="true">Yes</option></select></div>
+  <div><label>Photos (multiple allowed)</label><input id="fPhotos" type="file" accept="image/*" multiple></div>
+ </div>
+ <div id="photoPreview" class="gallery"></div>
+ <label>Notes</label><textarea id="fNotes" rows="3"></textarea>
+ <h3 style="margin-top:16px">Accessories</h3>
+ <div class="grid3">
+  <div><label>Type</label><select id="aType"><option value="">Select</option><option>Scope</option><option>Red Dot</option><option>Light</option><option>Laser</option><option>Grip</option><option>Sling</option><option>Magazine</option><option>Bipod</option><option>Muzzle Device</option><option>Case</option><option>Other</option></select></div>
+  <div><label>Make / Model</label><input id="aName"></div>
+  <div><label>Serial / ID</label><input id="aSerial"></div>
+ </div>
+ <div class="grid2">
+  <div><label>Price</label><input id="aPrice" type="number" min="0" step="0.01"></div>
+  <div><label>Notes</label><input id="aNotes"></div>
+ </div>
+ <button class="btn secondary" id="addAccessoryBtn" type="button">Add Accessory</button>
+ <div id="accessoryDraftList"></div>
+ <button class="btn success" id="saveItemBtn">Save Firearm</button>
+ <button class="btn secondary" id="clearItemBtn">Clear Form</button>
+</div></dialog>
+
+<dialog id="lockDialog"><div class="modal lock">
+ <h2>Catalog Locked</h2>
+ <p class="muted">Enter your PIN to continue.</p>
+ <input id="unlockPin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN">
+ <button class="btn" id="unlockBtn">Unlock</button>
+ <p id="unlockStatus" class="muted"></p>
+</div></dialog>
+
+<script>
+(() => {
+"use strict";
+const $=id=>document.getElementById(id);
+const DB="FirearmCatalogProV2", VERSION=1;
+let db, data={items:[],maintenance:[],wishlist:[]};
+let draftAccessories=[], draftPhotos=[];
+const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(Number(n)||0);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2);
+const nameOf=x=>[x.make,x.model].filter(Boolean).join(" ")||"Unnamed";
+
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,VERSION);r.onupgradeneeded=e=>{const d=e.target.result;["items","maintenance","wishlist"].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:"id"})})};r.onsuccess=e=>{db=e.target.result;res()};r.onerror=()=>rej(r.error)})}
+function all(store){return new Promise((res,rej)=>{const r=db.transaction(store,"readonly").objectStore(store).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+function put(store,obj){return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).put(obj);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function del(store,id){return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function clear(store){return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+async function load(){data.items=await all("items");data.maintenance=await all("maintenance");data.wishlist=await all("wishlist");renderAll()}
+function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===id))}
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+
+function renderAll(){renderDashboard();renderInventory();renderSafeMap();renderMaintenance();renderWishlist();renderReport();populateItemSelect()}
+function renderDashboard(){
+ $("dItems").textContent=data.items.length;
+ $("dAccessories").textContent=data.items.reduce((s,x)=>s+(x.accessories||[]).length,0);
+ $("dValue").textContent=money(data.items.reduce((s,x)=>s+(Number(x.estimatedValue)||Number(x.purchasePrice)||0),0));
+ $("dMaintenance").textContent=data.maintenance.length;
+ const recent=[...data.items].sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0,5);
+ $("recentList").innerHTML=recent.length?recent.map(x=>`<div class="subcard"><strong>${esc(nameOf(x))}</strong><br><span class="muted">${esc(x.type)} • ${esc(x.location||"No location")}</span></div>`).join(""):"No items yet.";
+}
+function renderInventory(){
+ const q=$("searchInput").value.trim().toLowerCase(), ft=$("filterType").value, sort=$("sortInventory").value;
+ let rows=data.items.filter(x=>{
+  const blob=[x.type,x.make,x.model,x.serial,x.caliber,x.condition,x.location,x.upgrade,x.notes,...(x.accessories||[]).flatMap(a=>[a.type,a.name,a.serial,a.notes])].join(" ").toLowerCase();
+  return(!q||blob.includes(q))&&(!ft||x.type===ft)
+ });
+ rows.sort((a,b)=>sort==="name"?nameOf(a).localeCompare(nameOf(b)):sort==="type"?String(a.type).localeCompare(String(b.type)):sort==="value"?(Number(b.estimatedValue)||0)-(Number(a.estimatedValue)||0):String(b.updatedAt).localeCompare(String(a.updatedAt)));
+ $("inventoryCount").textContent=`${rows.length} of ${data.items.length}`;
+ $("inventoryList").innerHTML=rows.length?rows.map(x=>{
+  const photos=x.photos||[], first=photos[0];
+  const acc=(x.accessories||[]).map(a=>`<div class="subcard"><strong>${esc(a.type||"Accessory")}</strong> — ${esc(a.name||"")}<br><span class="muted">Serial/ID: ${esc(a.serial||"N/A")} • ${a.price?money(a.price):"No price"}</span>${a.notes?`<br>${esc(a.notes)}`:""}</div>`).join("");
+  return `<article class="item">
+   <div class="itemhead"><div><span class="pill">${esc(x.type)}</span>${x.favorite?'<span class="pill favorite">★ Favorite</span>':""}<h3>${esc(nameOf(x))}</h3></div>${first?`<img class="thumb" src="${first}" alt="">`:""}</div>
+   <p><strong>Serial:</strong> ${esc(x.serial)}</p><p><strong>Caliber/Gauge:</strong> ${esc(x.caliber||"N/A")}</p>
+   <p><strong>Condition:</strong> ${esc(x.condition||"N/A")}</p><p><strong>Location:</strong> ${esc(x.location||"N/A")}</p>
+   <p><strong>Purchase:</strong> ${esc(x.purchaseDate||"N/A")} ${x.purchasePrice?"• "+money(x.purchasePrice):""}</p>
+   <p><strong>Estimated value:</strong> ${x.estimatedValue?money(x.estimatedValue):"N/A"}</p>
+   <p><strong>Next upgrade:</strong> ${esc(x.upgrade||"None")}</p><p><strong>Notes:</strong> ${esc(x.notes||"None")}</p>
+   ${photos.length?`<div class="gallery">${photos.map(p=>`<img src="${p}" alt="">`).join("")}</div>`:""}
+   <h3>Accessories</h3>${acc||'<p class="muted">None recorded.</p>'}
+   <button class="btn inline" onclick="editInventory('${x.id}')">Edit</button><button class="btn danger inline" onclick="deleteInventory('${x.id}')">Delete</button>
+  </article>`
+ }).join(""):'<p class="muted">No matching items.</p>';
+}
+function renderSafeMap(){
+ const groups={};data.items.forEach(x=>{const k=x.location?.trim()||"Unassigned";(groups[k]??=[]).push(x)});
+ $("safeMapList").innerHTML=Object.keys(groups).length?Object.keys(groups).sort().map(k=>`<div class="item"><h3>${esc(k)}</h3>${groups[k].map(x=>`<div class="subcard"><strong>${esc(nameOf(x))}</strong><br><span class="muted">${esc(x.type)} • ${esc(x.caliber||"N/A")}</span></div>`).join("")}</div>`).join(""):'<p class="muted">No storage locations entered yet.</p>';
+}
+function populateItemSelect(){
+ $("maintItem").innerHTML='<option value="">Select firearm</option>'+data.items.sort((a,b)=>nameOf(a).localeCompare(nameOf(b))).map(x=>`<option value="${x.id}">${esc(nameOf(x))}</option>`).join("");
+}
+function renderMaintenance(){
+ const map=Object.fromEntries(data.items.map(x=>[x.id,nameOf(x)]));
+ const rows=[...data.maintenance].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+ $("maintenanceList").innerHTML=rows.length?rows.map(m=>`<div class="item"><h3>${esc(map[m.itemId]||"Deleted item")}</h3><p><strong>Date:</strong> ${esc(m.date||"N/A")} • <strong>Rounds:</strong> ${esc(m.rounds||0)}</p><p><strong>Work:</strong> ${esc(m.work)}</p><p>${esc(m.notes||"")}</p><button class="btn danger inline" onclick="deleteMaintenance('${m.id}')">Delete</button></div>`).join(""):'<p class="muted">No maintenance entries.</p>';
+}
+function renderWishlist(){
+ const rows=[...data.wishlist].sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]??9)-({High:0,Medium:1,Low:2}[b.priority]??9));
+ $("wishlistList").innerHTML=rows.length?rows.map(w=>`<div class="item"><span class="pill">${esc(w.category)}</span><span class="pill">${esc(w.priority)} priority</span><h3>${esc(w.name)}</h3><p><strong>Target:</strong> ${w.price?money(w.price):"N/A"} • <strong>Source:</strong> ${esc(w.store||"N/A")}</p><p>${esc(w.notes||"")}</p><button class="btn danger inline" onclick="deleteWish('${w.id}')">Delete</button></div>`).join(""):'<p class="muted">No wishlist items.</p>';
+}
+function renderReport(){
+ $("reportBody").innerHTML=data.items.map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(nameOf(x))}</td><td>${esc(x.serial)}</td><td>${esc(x.caliber||"")}</td><td>${esc(x.location||"")}</td><td>${x.estimatedValue?money(x.estimatedValue):""}</td></tr>`).join("");
+}
+
+function resetItemForm(){
+ $("itemFormTitle").textContent="Add Firearm";$("editItemId").value="";
+ ["fType","fMake","fModel","fSerial","fCaliber","fCondition","fPurchaseDate","fPurchasePrice","fEstimatedValue","fLocation","fUpgrade","fNotes","aType","aName","aSerial","aPrice","aNotes"].forEach(id=>$(id).value="");
+ $("fFavorite").value="false";$("fPhotos").value="";draftAccessories=[];draftPhotos=[];renderDrafts()
+}
+function renderDrafts(){
+ $("accessoryDraftList").innerHTML=draftAccessories.map((a,i)=>`<div class="subcard"><strong>${esc(a.type)}</strong> — ${esc(a.name)}<br><span class="muted">${esc(a.serial||"N/A")} ${a.price?"• "+money(a.price):""}</span><button class="btn danger inline" type="button" onclick="removeDraftAccessory(${i})">Remove</button></div>`).join("");
+ $("photoPreview").innerHTML=draftPhotos.map((p,i)=>`<div><img src="${p}" alt=""><button type="button" class="btn danger" onclick="removeDraftPhoto(${i})">Remove</button></div>`).join("");
+}
+window.removeDraftAccessory=i=>{draftAccessories.splice(i,1);renderDrafts()}
+window.removeDraftPhoto=i=>{draftPhotos.splice(i,1);renderDrafts()}
+$("addAccessoryBtn").onclick=()=>{
+ const type=$("aType").value,name=$("aName").value.trim();if(!type||!name){alert("Select an accessory type and enter its make/model.");return}
+ draftAccessories.push({type,name,serial:$("aSerial").value.trim(),price:$("aPrice").value,notes:$("aNotes").value.trim()});
+ ["aType","aName","aSerial","aPrice","aNotes"].forEach(id=>$(id).value="");renderDrafts()
+};
+$("fPhotos").onchange=async e=>{
+ const files=[...e.target.files];for(const file of files){if(file.size>12*1024*1024){alert(file.name+" is larger than 12 MB and was skipped.");continue}draftPhotos.push(await compress(file))}
+ renderDrafts();e.target.value=""
+};
+function compress(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.8))};img.onerror=rej;img.src=e.target.result};r.onerror=rej;r.readAsDataURL(file)})}
+
+$("addItemFab").onclick=()=>{resetItemForm();$("itemDialog").showModal()}
+$("closeItemDialog").onclick=()=>$("itemDialog").close()
+$("clearItemBtn").onclick=resetItemForm
+$("saveItemBtn").onclick=async()=>{
+ const type=$("fType").value,make=$("fMake").value.trim(),model=$("fModel").value.trim(),serial=$("fSerial").value.trim();
+ if(!type||!make||!model||!serial){alert("Type, make, model, and serial number are required.");return}
+ const old=data.items.find(x=>x.id===$("editItemId").value),now=new Date().toISOString();
+ await put("items",{id:old?.id||uid(),type,make,model,serial,caliber:$("fCaliber").value.trim(),condition:$("fCondition").value,purchaseDate:$("fPurchaseDate").value,purchasePrice:$("fPurchasePrice").value,estimatedValue:$("fEstimatedValue").value,location:$("fLocation").value.trim(),upgrade:$("fUpgrade").value.trim(),favorite:$("fFavorite").value==="true",notes:$("fNotes").value.trim(),photos:[...draftPhotos],accessories:[...draftAccessories],createdAt:old?.createdAt||now,updatedAt:now});
+ $("itemDialog").close();resetItemForm();await load();showView("inventory")
+}
+window.editInventory=id=>{
+ const x=data.items.find(v=>v.id===id);if(!x)return;$("itemFormTitle").textContent="Edit Firearm";$("editItemId").value=x.id;
+ const map={fType:x.type,fMake:x.make,fModel:x.model,fSerial:x.serial,fCaliber:x.caliber,fCondition:x.condition,fPurchaseDate:x.purchaseDate,fPurchasePrice:x.purchasePrice,fEstimatedValue:x.estimatedValue,fLocation:x.location,fUpgrade:x.upgrade,fNotes:x.notes};Object.entries(map).forEach(([k,v])=>$(k).value=v||"");
+ $("fFavorite").value=String(!!x.favorite);draftAccessories=[...(x.accessories||[])];draftPhotos=[...(x.photos||[])];renderDrafts();$("itemDialog").showModal()
+}
+window.deleteInventory=async id=>{const x=data.items.find(v=>v.id===id);if(confirm(`Delete ${nameOf(x)}?`)){await del("items",id);await load()}}
+$("searchInput").oninput=renderInventory;$("filterType").onchange=renderInventory;$("sortInventory").onchange=renderInventory;
+
+$("addMaintBtn").onclick=async()=>{
+ const itemId=$("maintItem").value,date=$("maintDate").value,work=$("maintWork").value.trim();if(!itemId||!date||!work){alert("Choose a firearm, date, and work performed.");return}
+ await put("maintenance",{id:uid(),itemId,date,rounds:$("maintRounds").value,work,notes:$("maintNotes").value.trim(),createdAt:new Date().toISOString()});
+ ["maintDate","maintRounds","maintWork","maintNotes"].forEach(id=>$(id).value="");await load()
+}
+window.deleteMaintenance=async id=>{if(confirm("Delete this maintenance entry?")){await del("maintenance",id);await load()}}
+
+$("addWishBtn").onclick=async()=>{
+ const name=$("wishName").value.trim();if(!name){alert("Enter a wishlist item name.");return}
+ await put("wishlist",{id:uid(),category:$("wishCategory").value,name,price:$("wishPrice").value,store:$("wishStore").value.trim(),priority:$("wishPriority").value,notes:$("wishNotes").value.trim(),createdAt:new Date().toISOString()});
+ ["wishName","wishPrice","wishStore","wishNotes"].forEach(id=>$(id).value="");await load()
+}
+window.deleteWish=async id=>{if(confirm("Delete this wishlist item?")){await del("wishlist",id);await load()}}
+
+$("exportBtn").onclick=()=>{
+ const payload={app:"Firearm Catalog Pro",version:"2.0",exportedAt:new Date().toISOString(),data};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`firearm-catalog-pro-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)
+}
+$("importFile").onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{const parsed=JSON.parse(await file.text()),incoming=parsed.data||parsed;if(!incoming.items||!incoming.maintenance||!incoming.wishlist)throw Error();
+ if(!confirm("Replace the current catalog with this backup?"))return;
+ for(const s of ["items","maintenance","wishlist"]){await clear(s);for(const row of incoming[s])await put(s,row)}
+ await load();alert("Backup imported.")
+ }catch{alert("That is not a valid Version 2 backup.")}e.target.value=""
+}
+$("printBtn").onclick=()=>window.print()
+
+function applyTheme(dark){document.body.classList.toggle("dark",dark);localStorage.setItem("fcp-theme",dark?"dark":"light")}
+$("themeBtn").onclick=()=>applyTheme(!document.body.classList.contains("dark"))
+$("themeSettingsBtn").onclick=$("themeBtn").onclick
+
+async function hashPin(pin){const bytes=new TextEncoder().encode(pin),hash=await crypto.subtle.digest("SHA-256",bytes);return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("")}
+$("savePinBtn").onclick=async()=>{const p=$("newPin").value;if(!/^\d{4,8}$/.test(p)){alert("Use a 4–8 digit PIN.");return}localStorage.setItem("fcp-pin",await hashPin(p));$("newPin").value="";alert("PIN saved.")}
+$("removePinBtn").onclick=()=>{if(confirm("Remove the PIN lock?")){localStorage.removeItem("fcp-pin");alert("PIN removed.")}}
+$("lockBtn").onclick=()=>{if(localStorage.getItem("fcp-pin")){$("unlockPin").value="";$("unlockStatus").textContent="";$("lockDialog").showModal()}else{showView("settings");alert("Set a PIN first in Settings.")}}
+$("unlockBtn").onclick=async()=>{const h=await hashPin($("unlockPin").value);if(h===localStorage.getItem("fcp-pin"))$("lockDialog").close();else $("unlockStatus").textContent="Incorrect PIN."}
+
+(async()=>{
+ applyTheme(localStorage.getItem("fcp-theme")==="dark");
+ await openDB();await load();
+ $("maintDate").value=new Date().toISOString().slice(0,10);
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+ if(localStorage.getItem("fcp-pin"))$("lockDialog").showModal();
+})().catch(()=>alert("The browser could not open the catalog database."));
+})();
+</script>
+</body>
+</html>
