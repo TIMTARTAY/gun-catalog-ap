@@ -9,7 +9,7 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Firearm Catalog Pro</title>
+<title>Firearm Catalog Pro 4</title>
 <style>
 :root{
  --bg:#eef1f5;--surface:#fff;--surface2:#f8fafc;--text:#101828;--muted:#667085;
@@ -46,7 +46,7 @@ h2,h3{margin:0 0 10px}
 .grid3{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:700px){.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-@media(min-width:760px){.stats{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:760px){.stats{grid-template-columns:repeat(5,1fr)}}
 .stat{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
 .stat strong{display:block;font-size:24px}
 label{display:block;margin-top:9px;font-weight:750;font-size:14px}
@@ -90,7 +90,7 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
 <body>
 <header>
  <div class="headerrow">
-  <div class="brand"><h1>Firearm Catalog Pro</h1><small>Private on-device inventory</small></div>
+  <div class="brand"><h1>Firearm Catalog Pro 4</h1><small>Private on-device inventory</small></div>
   <div>
    <button class="iconbtn" id="themeBtn" aria-label="Toggle dark mode">◐</button>
    <button class="iconbtn" id="lockBtn" aria-label="Lock app">🔒</button>
@@ -101,10 +101,12 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
  <div class="navinner">
   <button class="navbtn active" data-view="dashboard">Dashboard</button>
   <button class="navbtn" data-view="inventory">Inventory</button>
+  <button class="navbtn" data-view="ammunition">Ammunition</button>
   <button class="navbtn" data-view="safemap">Safe Map</button>
   <button class="navbtn" data-view="maintenance">Maintenance</button>
   <button class="navbtn" data-view="wishlist">Wishlist</button>
   <button class="navbtn" data-view="reports">Backup & Reports</button>
+  <button class="navbtn" data-view="sync">Device Sync</button>
   <button class="navbtn" data-view="settings">Settings</button>
  </div>
 </nav>
@@ -118,6 +120,7 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
    <div class="stat"><strong id="dAccessories">0</strong>Accessories</div>
    <div class="stat"><strong id="dValue">$0</strong>Recorded Value</div>
    <div class="stat"><strong id="dMaintenance">0</strong>Maintenance Entries</div>
+   <div class="stat"><strong id="dAmmo">0</strong>Ammo Rounds</div>
   </div>
  </div>
  <div class="card">
@@ -140,6 +143,30 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
   </div>
  </div>
  <div class="card"><div class="itemhead"><h2>Inventory</h2><span id="inventoryCount" class="muted"></span></div><div id="inventoryList"></div></div>
+</section>
+
+
+<section class="view" id="ammunition">
+ <div class="card">
+  <h2>Add Ammunition</h2>
+  <div class="grid3">
+   <div><label>Caliber / Gauge *</label><input id="ammoCaliber" placeholder="9mm, .223, 12ga"></div>
+   <div><label>Brand</label><input id="ammoBrand" placeholder="Federal, Winchester..."></div>
+   <div><label>Load / Type</label><input id="ammoLoad" placeholder="FMJ, JHP, buckshot..."></div>
+  </div>
+  <div class="grid3">
+   <div><label>Quantity *</label><input id="ammoQuantity" type="number" min="0" inputmode="numeric"></div>
+   <div><label>Storage Location</label><input id="ammoLocation" placeholder="Ammo cabinet / shelf"></div>
+   <div><label>Lot Number</label><input id="ammoLot"></div>
+  </div>
+  <div class="grid2">
+   <div><label>Purchase Price</label><input id="ammoPrice" type="number" min="0" step="0.01"></div>
+   <div><label>Purchase Date</label><input id="ammoDate" type="date"></div>
+  </div>
+  <label>Notes</label><textarea id="ammoNotes" rows="3"></textarea>
+  <button class="btn success" id="addAmmoBtn">Save Ammunition</button>
+ </div>
+ <div class="card"><h2>Ammunition Inventory</h2><div id="ammoList"></div></div>
 </section>
 
 <section class="view" id="safemap">
@@ -192,6 +219,23 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
  <div class="card"><h2>Inventory Report</h2><div class="tablewrap"><table><thead><tr><th>Type</th><th>Make / Model</th><th>Serial</th><th>Caliber</th><th>Location</th><th>Value</th></tr></thead><tbody id="reportBody"></tbody></table></div></div>
 </section>
 
+
+<section class="view" id="sync">
+ <div class="card">
+  <h2>Move Data Between Devices</h2>
+  <p>This GitHub Pages version cannot automatically synchronize records between devices without a secure cloud database and account system.</p>
+  <div class="notice">Use <strong>Export Full Backup</strong>, save the file in iCloud Drive, Google Drive, or another private location, then import it on your other phone or tablet.</div>
+  <div class="actions" style="margin-top:10px">
+   <button class="btn success" id="syncExportBtn">Export for Another Device</button>
+   <button class="btn secondary" id="syncOpenReportsBtn">Open Import Screen</button>
+  </div>
+ </div>
+ <div class="card">
+  <h2>Automatic Cloud Sync</h2>
+  <p class="muted">Automatic live syncing requires a backend such as Supabase or Firebase. It is intentionally not enabled without your own private account and database credentials.</p>
+ </div>
+</section>
+
 <section class="view" id="settings">
  <div class="card">
   <h2>Privacy Lock</h2>
@@ -206,7 +250,7 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
  </div>
  <div class="card">
   <h2>About This Version</h2>
-  <p>Version 2.0 includes inventory, multiple photos, accessories, maintenance history, safe map, wishlist, search, reports, local PIN lock, backups, dark mode, and offline support.</p>
+  <p>Version 4.0 includes inventory, multiple photos, accessories, maintenance history, safe map, wishlist, search, reports, local PIN lock, backups, dark mode, and offline support.</p>
   <div class="warningbox">Cloud syncing and native Face ID require a secure backend or a native iPhone app. They are not included in this static GitHub Pages version.</div>
  </div>
 </section>
@@ -233,7 +277,11 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
   <div><label>Estimated Value</label><input id="fEstimatedValue" type="number" min="0" step="0.01"></div>
  </div>
  <div class="grid2">
-  <div><label>Storage Location</label><input id="fLocation" placeholder="Safe 1 / Shelf A"></div>
+  <div><label>Building / Room</label><input id="fRoom" placeholder="Home / Bedroom"></div>
+  <div><label>Safe / Cabinet</label><input id="fSafe" placeholder="Safe 1"></div>
+ </div><div class="grid3">
+  <div><label>Shelf / Drawer</label><input id="fShelf" placeholder="Shelf A"></div>
+  <div><label>Position</label><input id="fPosition" placeholder="Left / Slot 3"></div>
   <div><label>Next Upgrade</label><input id="fUpgrade"></div>
  </div>
  <div class="grid2">
@@ -241,6 +289,9 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
   <div><label>Photos (multiple allowed)</label><input id="fPhotos" type="file" accept="image/*" multiple></div>
  </div>
  <div id="photoPreview" class="gallery"></div>
+ <label>Receipt / Manual / Warranty Document</label>
+ <input id="fDocument" type="file" accept=".pdf,image/*">
+ <div id="documentPreview" class="muted"></div>
  <label>Notes</label><textarea id="fNotes" rows="3"></textarea>
  <h3 style="margin-top:16px">Accessories</h3>
  <div class="grid3">
@@ -251,6 +302,9 @@ th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
  <div class="grid2">
   <div><label>Price</label><input id="aPrice" type="number" min="0" step="0.01"></div>
   <div><label>Notes</label><input id="aNotes"></div>
+ </div><div class="grid2">
+  <div><label>Accessory Photo</label><input id="aPhoto" type="file" accept="image/*"></div>
+  <div><label>Purchase Date</label><input id="aDate" type="date"></div>
  </div>
  <button class="btn secondary" id="addAccessoryBtn" type="button">Add Accessory</button>
  <div id="accessoryDraftList"></div>
