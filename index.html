@@ -1,485 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#111827">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="format-detection" content="telephone=no">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>Firearm Catalog Pro 4</title>
-<style>
-:root{
- --bg:#eef1f5;--surface:#fff;--surface2:#f8fafc;--text:#101828;--muted:#667085;
- --border:#d0d5dd;--brand:#1d4ed8;--brand2:#163ea8;--danger:#b42318;--success:#067647;
- --warning:#b54708;--header:#111827;--shadow:0 4px 18px rgba(16,24,40,.10)
-}
-body.dark{
- --bg:#0f172a;--surface:#111827;--surface2:#1f2937;--text:#f9fafb;--muted:#cbd5e1;
- --border:#475569;--brand:#3b82f6;--brand2:#2563eb;--header:#020617;--shadow:0 4px 18px rgba(0,0,0,.35)
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-header{
- position:sticky;top:0;z-index:30;background:var(--header);color:#fff;padding:max(14px,env(safe-area-inset-top)) 14px 12px;
- box-shadow:0 2px 10px rgba(0,0,0,.25)
-}
-.headerrow{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1100px;margin:auto}
-.brand h1{margin:0;font-size:22px}.brand small{color:#cbd5e1}
-.iconbtn{width:44px;height:44px;border:0;border-radius:12px;background:#273449;color:#fff;font-size:20px}
-nav{position:sticky;top:76px;z-index:25;background:var(--surface);border-bottom:1px solid var(--border);overflow:auto;white-space:nowrap}
-.navinner{max-width:1100px;margin:auto;display:flex}
-.navbtn{width:auto;border:0;background:transparent;color:var(--muted);padding:13px 15px;font-weight:750;border-bottom:3px solid transparent}
-.navbtn.active{color:var(--brand);border-bottom-color:var(--brand)}
-main{max-width:1100px;margin:auto;padding:14px 12px 90px}
-.view{display:none}.view.active{display:block}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
-h2,h3{margin:0 0 10px}
-.muted{color:var(--muted);font-size:13px}
-.grid{display:grid;grid-template-columns:1fr;gap:10px}
-.grid2{display:grid;grid-template-columns:1fr;gap:10px}
-.grid3{display:grid;grid-template-columns:1fr;gap:10px}
-@media(min-width:700px){.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-@media(min-width:760px){.stats{grid-template-columns:repeat(5,1fr)}}
-.stat{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
-.stat strong{display:block;font-size:24px}
-label{display:block;margin-top:9px;font-weight:750;font-size:14px}
-input,select,textarea{
- width:100%;padding:12px;border-radius:11px;border:1px solid var(--border);background:var(--surface);
- color:var(--text);margin-top:6px
-}
-textarea{resize:vertical}
-.btn{width:100%;border:0;border-radius:11px;padding:12px;font-weight:800;background:var(--brand);color:#fff;margin-top:8px}
-.btn:hover{background:var(--brand2)}
-.btn.secondary{background:#475467}.btn.danger{background:var(--danger)}.btn.success{background:var(--success)}.btn.warning{background:var(--warning)}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.item{border:1px solid var(--border);border-radius:15px;padding:13px;margin-top:11px;background:var(--surface2)}
-.itemhead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
-.item h3{margin:4px 0}
-.thumb{width:92px;height:70px;object-fit:cover;border-radius:10px;border:1px solid var(--border);flex:0 0 auto}
-.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
-.gallery img{width:100%;height:95px;object-fit:cover;border-radius:9px;border:1px solid var(--border)}
-.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e4e7ec;color:#344054;font-size:12px;margin:0 5px 6px 0}
-body.dark .pill{background:#334155;color:#e2e8f0}
-.pill.favorite{background:#fef0c7;color:#7a2e0e}
-.subcard{padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--surface);margin-top:7px}
-.notice{padding:11px;border-radius:11px;background:#eff8ff;color:#1849a9;border:1px solid #84caff}
-body.dark .notice{background:#172554;color:#bfdbfe;border-color:#1d4ed8}
-.warningbox{padding:11px;border-radius:11px;background:#fffaeb;color:#93370d;border:1px solid #fedf89}
-body.dark .warningbox{background:#422006;color:#fde68a;border-color:#92400e}
-.fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;border:0;background:var(--brand);color:#fff;font-size:32px;box-shadow:0 8px 24px rgba(0,0,0,.28);z-index:40}
-dialog{width:min(96vw,820px);max-height:92vh;border:0;border-radius:18px;padding:0;background:var(--surface);color:var(--text);box-shadow:0 25px 70px rgba(0,0,0,.4)}
-dialog::backdrop{background:rgba(0,0,0,.6)}
-.modal{padding:15px;overflow:auto;max-height:92vh}
-.modalhead{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-15px;background:var(--surface);padding:12px 0;z-index:3}
-.close{width:auto;border:0;border-radius:9px;padding:9px 12px;background:#475467;color:#fff}
-.hidden{display:none!important}
-.inline{width:auto;display:inline-block;padding:8px 11px;margin-right:6px}
-.tablewrap{overflow:auto}
-table{border-collapse:collapse;width:100%;min-width:640px}
-th,td{border-bottom:1px solid var(--border);padding:9px;text-align:left}
-.lock{max-width:440px;margin:35px auto}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Firearm Catalog V3</title>
+  <style>
+    :root{
+      --bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--border:#d1d5db;
+      --primary:#1d4ed8;--primary2:#1e40af;--danger:#991b1b;--success:#047857;
+      --shadow:0 10px 30px rgba(15,23,42,.08)
+    }
+    [data-theme="dark"]{
+      --bg:#0f172a;--card:#111827;--text:#f8fafc;--muted:#94a3b8;--border:#334155;
+      --primary:#60a5fa;--primary2:#3b82f6;--danger:#f87171;--success:#34d399;
+      --shadow:0 12px 30px rgba(0,0,0,.35)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    button,input,select,textarea{font:inherit}
+    header{position:sticky;top:0;z-index:20;background:#111827;color:#fff;padding:14px 16px;box-shadow:var(--shadow)}
+    .topbar{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:800;font-size:1.15rem}.brand small{display:block;font-weight:400;color:#cbd5e1;font-size:.72rem}
+    .header-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .header-actions button{border:1px solid #475569;background:#1f2937;color:white;padding:9px 11px;border-radius:10px}
+    nav{max-width:1180px;margin:12px auto 0;display:flex;gap:8px;overflow:auto}
+    nav button{white-space:nowrap;border:0;border-radius:999px;padding:9px 13px;background:#374151;color:#e5e7eb}
+    nav button.active{background:#fff;color:#111827;font-weight:700}
+    main{max-width:1180px;margin:18px auto;padding:0 14px 80px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    .stat{grid-column:span 3}.stat h3{margin:0;color:var(--muted);font-size:.85rem}.stat strong{display:block;font-size:1.7rem;margin-top:6px}
+    .wide{grid-column:span 12}.half{grid-column:span 6}
+    h2,h3{margin-top:0}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .toolbar>*{flex:1;min-width:150px}
+    input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text)}
+    textarea{min-height:92px;resize:vertical}
+    label{display:block;font-weight:700;margin:0 0 6px}
+    .field{margin-bottom:12px}
+    .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .btn{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}
+    .btn-primary{background:var(--primary);color:white}.btn-secondary{background:#475569;color:white}
+    .btn-danger{background:var(--danger);color:white}.btn-success{background:var(--success);color:white}
+    .btn-light{background:var(--card);color:var(--text);border:1px solid var(--border)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .item-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .item{background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;box-shadow:var(--shadow)}
+    .item img{width:100%;height:190px;object-fit:cover;background:#e5e7eb}
+    .item-body{padding:14px}.item h3{margin:0 0 4px}.meta{color:var(--muted);font-size:.9rem;line-height:1.45}
+    .tag{display:inline-block;border:1px solid var(--border);padding:4px 8px;border-radius:999px;font-size:.75rem;margin:5px 4px 0 0}
+    .empty{text-align:center;color:var(--muted);padding:34px}
+    .hidden{display:none!important}
+    .modal{position:fixed;inset:0;background:rgba(2,6,23,.68);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+    .modal-card{width:min(760px,100%);max-height:92vh;overflow:auto;background:var(--card);border-radius:18px;padding:18px}
+    .photo-preview{display:flex;gap:8px;flex-wrap:wrap}.photo-preview img{width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+    .accessory-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px}
+    .notice{padding:12px;border-radius:10px;background:#dbeafe;color:#1e3a8a;margin-bottom:12px}
+    [data-theme="dark"] .notice{background:#172554;color:#bfdbfe}
+    .lock-screen{position:fixed;inset:0;background:#0f172a;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px}
+    .lock-card{width:min(390px,100%);background:#111827;color:#fff;border:1px solid #334155;border-radius:18px;padding:22px;text-align:center}
+    .lock-card input{background:#0f172a;color:#fff;border-color:#475569;text-align:center;font-size:1.25rem;letter-spacing:.25rem}
+    table{width:100%;border-collapse:collapse}th,td{text-align:left;border-bottom:1px solid var(--border);padding:10px 8px;font-size:.9rem}
+    .small{font-size:.82rem;color:var(--muted)}
+    @media(max-width:850px){.stat{grid-column:span 6}.half{grid-column:span 12}.item-list{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.fields{grid-template-columns:1fr}.item-list{grid-template-columns:1fr}.stat{grid-column:span 6}.accessory-row{grid-template-columns:1fr}}
+    @media print{header,.no-print{display:none!important}body{background:white;color:black}main{max-width:none}.card{box-shadow:none;border:1px solid #ccc}}
+  </style>
 </head>
 <body>
+<div id="lockScreen" class="lock-screen hidden">
+  <div class="lock-card">
+    <h2>Catalog Locked</h2>
+    <p>Enter your PIN to continue.</p>
+    <input id="unlockPin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN" />
+    <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="unlockApp()">Unlock</button>
+    <p id="lockMessage" class="small"></p>
+  </div>
+</div>
+
 <header>
- <div class="headerrow">
-  <div class="brand"><h1>Firearm Catalog Pro 4</h1><small>Private on-device inventory</small></div>
-  <div>
-   <button class="iconbtn" id="themeBtn" aria-label="Toggle dark mode">◐</button>
-   <button class="iconbtn" id="lockBtn" aria-label="Lock app">🔒</button>
+  <div class="topbar">
+    <div class="brand">Firearm Catalog V3<small>Private inventory manager</small></div>
+    <div class="header-actions">
+      <button onclick="toggleTheme()">◐ Theme</button>
+      <button onclick="lockNow()">🔒 Lock</button>
+      <button onclick="installApp()" id="installBtn" class="hidden">＋ Install</button>
+    </div>
   </div>
- </div>
+  <nav>
+    <button class="active" data-view="dashboard" onclick="showView('dashboard',this)">Dashboard</button>
+    <button data-view="inventory" onclick="showView('inventory',this)">Inventory</button>
+    <button data-view="reports" onclick="showView('reports',this)">Reports</button>
+    <button data-view="backup" onclick="showView('backup',this)">Backup & Sync</button>
+    <button data-view="settings" onclick="showView('settings',this)">Settings</button>
+  </nav>
 </header>
-<nav>
- <div class="navinner">
-  <button class="navbtn active" data-view="dashboard">Dashboard</button>
-  <button class="navbtn" data-view="inventory">Inventory</button>
-  <button class="navbtn" data-view="ammunition">Ammunition</button>
-  <button class="navbtn" data-view="safemap">Safe Map</button>
-  <button class="navbtn" data-view="maintenance">Maintenance</button>
-  <button class="navbtn" data-view="wishlist">Wishlist</button>
-  <button class="navbtn" data-view="reports">Backup & Reports</button>
-  <button class="navbtn" data-view="sync">Device Sync</button>
-  <button class="navbtn" data-view="settings">Settings</button>
- </div>
-</nav>
 
-<main id="appMain">
-<section class="view active" id="dashboard">
- <div class="card">
-  <h2>Dashboard</h2>
-  <div class="stats">
-   <div class="stat"><strong id="dItems">0</strong>Firearms</div>
-   <div class="stat"><strong id="dAccessories">0</strong>Accessories</div>
-   <div class="stat"><strong id="dValue">$0</strong>Recorded Value</div>
-   <div class="stat"><strong id="dMaintenance">0</strong>Maintenance Entries</div>
-   <div class="stat"><strong id="dAmmo">0</strong>Ammo Rounds</div>
-  </div>
- </div>
- <div class="card">
-  <h2>Recently Updated</h2>
-  <div id="recentList" class="muted">No items yet.</div>
- </div>
- <div class="card">
-  <h2>Quick Notes</h2>
-  <div class="notice">Your inventory and photos remain in this browser on this device. Export a backup after adding or changing important records.</div>
- </div>
-</section>
+<main>
+  <section id="dashboardView">
+    <div class="grid">
+      <div class="card stat"><h3>Total Firearms</h3><strong id="statCount">0</strong></div>
+      <div class="card stat"><h3>Total Accessories</h3><strong id="statAccessories">0</strong></div>
+      <div class="card stat"><h3>Purchase Total</h3><strong id="statPurchase">$0</strong></div>
+      <div class="card stat"><h3>Estimated Value</h3><strong id="statValue">$0</strong></div>
+      <div class="card wide">
+        <div class="actions no-print" style="justify-content:space-between;align-items:center">
+          <div><h2 style="margin:0">Recent Inventory</h2><div class="small">Your newest entries</div></div>
+          <button class="btn btn-primary" onclick="openEditor()">＋ Add Firearm</button>
+        </div>
+        <div id="recentList" class="item-list" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </section>
 
-<section class="view" id="inventory">
- <div class="card">
-  <h2>Search & Filter</h2>
-  <div class="grid3">
-   <input id="searchInput" placeholder="Search make, model, serial, caliber, notes...">
-   <select id="filterType"><option value="">All types</option><option>Rifle</option><option>Pistol</option><option>Shotgun</option><option>Revolver</option><option>Suppressor</option><option>Receiver</option><option>Other</option></select>
-   <select id="sortInventory"><option value="updated">Recently updated</option><option value="name">Name A–Z</option><option value="type">Type</option><option value="value">Highest value</option></select>
-  </div>
- </div>
- <div class="card"><div class="itemhead"><h2>Inventory</h2><span id="inventoryCount" class="muted"></span></div><div id="inventoryList"></div></div>
-</section>
+  <section id="inventoryView" class="hidden">
+    <div class="card">
+      <div class="actions" style="justify-content:space-between;align-items:center">
+        <div><h2 style="margin:0">Inventory</h2><div class="small">Search, filter, and manage your collection</div></div>
+        <button class="btn btn-primary" onclick="openEditor()">＋ Add Firearm</button>
+      </div>
+      <div class="toolbar" style="margin-top:14px">
+        <input id="searchInput" placeholder="Search manufacturer, model, caliber, serial, location..." oninput="renderInventory()" />
+        <select id="typeFilter" onchange="renderInventory()">
+          <option value="">All types</option><option>Pistol</option><option>Rifle</option><option>Shotgun</option><option>Revolver</option><option>Suppressor</option><option>Other</option>
+        </select>
+        <select id="locationFilter" onchange="renderInventory()"><option value="">All locations</option></select>
+      </div>
+      <div id="inventoryList" class="item-list"></div>
+    </div>
+  </section>
 
+  <section id="reportsView" class="hidden">
+    <div class="grid">
+      <div class="card wide">
+        <div class="actions no-print" style="justify-content:space-between">
+          <div><h2 style="margin:0">Inventory Report</h2><div class="small">Print or save as PDF from your browser</div></div>
+          <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+        </div>
+        <div id="reportSummary" style="margin:14px 0"></div>
+        <div style="overflow:auto"><table><thead><tr><th>Item</th><th>Type</th><th>Serial</th><th>Location</th><th>Purchase</th><th>Value</th></tr></thead><tbody id="reportRows"></tbody></table></div>
+      </div>
+    </div>
+  </section>
 
-<section class="view" id="ammunition">
- <div class="card">
-  <h2>Add Ammunition</h2>
-  <div class="grid3">
-   <div><label>Caliber / Gauge *</label><input id="ammoCaliber" placeholder="9mm, .223, 12ga"></div>
-   <div><label>Brand</label><input id="ammoBrand" placeholder="Federal, Winchester..."></div>
-   <div><label>Load / Type</label><input id="ammoLoad" placeholder="FMJ, JHP, buckshot..."></div>
-  </div>
-  <div class="grid3">
-   <div><label>Quantity *</label><input id="ammoQuantity" type="number" min="0" inputmode="numeric"></div>
-   <div><label>Storage Location</label><input id="ammoLocation" placeholder="Ammo cabinet / shelf"></div>
-   <div><label>Lot Number</label><input id="ammoLot"></div>
-  </div>
-  <div class="grid2">
-   <div><label>Purchase Price</label><input id="ammoPrice" type="number" min="0" step="0.01"></div>
-   <div><label>Purchase Date</label><input id="ammoDate" type="date"></div>
-  </div>
-  <label>Notes</label><textarea id="ammoNotes" rows="3"></textarea>
-  <button class="btn success" id="addAmmoBtn">Save Ammunition</button>
- </div>
- <div class="card"><h2>Ammunition Inventory</h2><div id="ammoList"></div></div>
-</section>
+  <section id="backupView" class="hidden">
+    <div class="grid">
+      <div class="card half">
+        <h2>Backup</h2>
+        <p>Export a complete encrypted-by-device backup file, including photos and accessories.</p>
+        <div class="actions">
+          <button class="btn btn-success" onclick="exportBackup()">Export Backup</button>
+          <label class="btn btn-secondary" style="cursor:pointer">Import Backup<input id="importFile" type="file" accept=".json,application/json" class="hidden" onchange="importBackup(event)"></label>
+        </div>
+      </div>
+      <div class="card half">
+        <h2>Cross-device transfer</h2>
+        <div class="notice">For privacy and reliability, this version uses manual backup transfer. Export on one device, then import the same file on another device.</div>
+        <p class="small">Automatic cloud sync requires a private database account. Setup instructions are included in the README.</p>
+      </div>
+    </div>
+  </section>
 
-<section class="view" id="safemap">
- <div class="card"><h2>Safe Map</h2><p class="muted">Items are grouped by the storage location entered on each record.</p><div id="safeMapList"></div></div>
-</section>
-
-<section class="view" id="maintenance">
- <div class="card">
-  <h2>Add Maintenance Entry</h2>
-  <div class="grid3">
-   <div><label>Firearm</label><select id="maintItem"></select></div>
-   <div><label>Date</label><input id="maintDate" type="date"></div>
-   <div><label>Round Count</label><input id="maintRounds" type="number" min="0"></div>
-  </div>
-  <label>Work Performed</label><input id="maintWork" placeholder="Cleaning, inspection, part replacement...">
-  <label>Notes</label><textarea id="maintNotes" rows="3"></textarea>
-  <button class="btn success" id="addMaintBtn">Save Maintenance Entry</button>
- </div>
- <div class="card"><h2>Maintenance History</h2><div id="maintenanceList"></div></div>
-</section>
-
-<section class="view" id="wishlist">
- <div class="card">
-  <h2>Add Wishlist Item</h2>
-  <div class="grid3">
-   <div><label>Category</label><select id="wishCategory"><option>Firearm</option><option>Accessory</option><option>Upgrade</option><option>Other</option></select></div>
-   <div><label>Name</label><input id="wishName" placeholder="Make and model"></div>
-   <div><label>Target Price</label><input id="wishPrice" type="number" min="0" step="0.01"></div>
-  </div>
-  <div class="grid2">
-   <div><label>Store / Source</label><input id="wishStore"></div>
-   <div><label>Priority</label><select id="wishPriority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
-  </div>
-  <label>Notes</label><textarea id="wishNotes" rows="3"></textarea>
-  <button class="btn success" id="addWishBtn">Add to Wishlist</button>
- </div>
- <div class="card"><h2>Wishlist</h2><div id="wishlistList"></div></div>
-</section>
-
-<section class="view" id="reports">
- <div class="card">
-  <h2>Backup & Restore</h2>
-  <div class="actions">
-   <button class="btn success" id="exportBtn">Export Full Backup</button>
-   <button class="btn secondary" id="printBtn">Print / Save PDF</button>
-  </div>
-  <label>Import backup</label><input id="importFile" type="file" accept=".json,application/json">
-  <div class="warningbox" style="margin-top:10px">Importing replaces the information currently stored in this app.</div>
- </div>
- <div class="card"><h2>Inventory Report</h2><div class="tablewrap"><table><thead><tr><th>Type</th><th>Make / Model</th><th>Serial</th><th>Caliber</th><th>Location</th><th>Value</th></tr></thead><tbody id="reportBody"></tbody></table></div></div>
-</section>
-
-
-<section class="view" id="sync">
- <div class="card">
-  <h2>Move Data Between Devices</h2>
-  <p>This GitHub Pages version cannot automatically synchronize records between devices without a secure cloud database and account system.</p>
-  <div class="notice">Use <strong>Export Full Backup</strong>, save the file in iCloud Drive, Google Drive, or another private location, then import it on your other phone or tablet.</div>
-  <div class="actions" style="margin-top:10px">
-   <button class="btn success" id="syncExportBtn">Export for Another Device</button>
-   <button class="btn secondary" id="syncOpenReportsBtn">Open Import Screen</button>
-  </div>
- </div>
- <div class="card">
-  <h2>Automatic Cloud Sync</h2>
-  <p class="muted">Automatic live syncing requires a backend such as Supabase or Firebase. It is intentionally not enabled without your own private account and database credentials.</p>
- </div>
-</section>
-
-<section class="view" id="settings">
- <div class="card">
-  <h2>Privacy Lock</h2>
-  <p class="muted">This is a local PIN screen. It prevents casual access but is not the same as native Face ID or full encryption.</p>
-  <label>New 4–8 digit PIN</label><input id="newPin" type="password" inputmode="numeric" maxlength="8">
-  <button class="btn" id="savePinBtn">Set or Change PIN</button>
-  <button class="btn danger" id="removePinBtn">Remove PIN</button>
- </div>
- <div class="card">
-  <h2>Appearance</h2>
-  <button class="btn secondary" id="themeSettingsBtn">Toggle Light / Dark Mode</button>
- </div>
- <div class="card">
-  <h2>About This Version</h2>
-  <p>Version 4.0 includes inventory, multiple photos, accessories, maintenance history, safe map, wishlist, search, reports, local PIN lock, backups, dark mode, and offline support.</p>
-  <div class="warningbox">Cloud syncing and native Face ID require a secure backend or a native iPhone app. They are not included in this static GitHub Pages version.</div>
- </div>
-</section>
+  <section id="settingsView" class="hidden">
+    <div class="grid">
+      <div class="card half">
+        <h2>Security</h2>
+        <div class="field"><label>New PIN</label><input id="newPin" type="password" inputmode="numeric" maxlength="8" placeholder="4–8 digits"></div>
+        <div class="actions"><button class="btn btn-primary" onclick="savePin()">Save PIN</button><button class="btn btn-danger" onclick="removePin()">Remove PIN</button></div>
+        <p class="small">PIN protection prevents casual access on this device. It is not a substitute for full device encryption.</p>
+      </div>
+      <div class="card half">
+        <h2>Data</h2>
+        <p>Delete all catalog data stored in this browser.</p>
+        <button class="btn btn-danger" onclick="clearAllData()">Delete All Data</button>
+      </div>
+    </div>
+  </section>
 </main>
 
-<button class="fab" id="addItemFab" aria-label="Add firearm">+</button>
-
-<dialog id="itemDialog"><div class="modal">
- <div class="modalhead"><h2 id="itemFormTitle">Add Firearm</h2><button class="close" id="closeItemDialog">Close</button></div>
- <input id="editItemId" type="hidden">
- <div class="grid3">
-  <div><label>Type *</label><select id="fType"><option value="">Select</option><option>Rifle</option><option>Pistol</option><option>Shotgun</option><option>Revolver</option><option>Suppressor</option><option>Receiver</option><option>Other</option></select></div>
-  <div><label>Make *</label><input id="fMake"></div>
-  <div><label>Model *</label><input id="fModel"></div>
- </div>
- <div class="grid3">
-  <div><label>Serial Number *</label><input id="fSerial" autocapitalize="characters"></div>
-  <div><label>Caliber / Gauge</label><input id="fCaliber"></div>
-  <div><label>Condition</label><select id="fCondition"><option value="">Optional</option><option>New</option><option>Excellent</option><option>Very Good</option><option>Good</option><option>Fair</option></select></div>
- </div>
- <div class="grid3">
-  <div><label>Purchase Date</label><input id="fPurchaseDate" type="date"></div>
-  <div><label>Purchase Price</label><input id="fPurchasePrice" type="number" min="0" step="0.01"></div>
-  <div><label>Estimated Value</label><input id="fEstimatedValue" type="number" min="0" step="0.01"></div>
- </div>
- <div class="grid2">
-  <div><label>Building / Room</label><input id="fRoom" placeholder="Home / Bedroom"></div>
-  <div><label>Safe / Cabinet</label><input id="fSafe" placeholder="Safe 1"></div>
- </div><div class="grid3">
-  <div><label>Shelf / Drawer</label><input id="fShelf" placeholder="Shelf A"></div>
-  <div><label>Position</label><input id="fPosition" placeholder="Left / Slot 3"></div>
-  <div><label>Next Upgrade</label><input id="fUpgrade"></div>
- </div>
- <div class="grid2">
-  <div><label>Favorite</label><select id="fFavorite"><option value="false">No</option><option value="true">Yes</option></select></div>
-  <div><label>Photos (multiple allowed)</label><input id="fPhotos" type="file" accept="image/*" multiple></div>
- </div>
- <div id="photoPreview" class="gallery"></div>
- <label>Receipt / Manual / Warranty Document</label>
- <input id="fDocument" type="file" accept=".pdf,image/*">
- <div id="documentPreview" class="muted"></div>
- <label>Notes</label><textarea id="fNotes" rows="3"></textarea>
- <h3 style="margin-top:16px">Accessories</h3>
- <div class="grid3">
-  <div><label>Type</label><select id="aType"><option value="">Select</option><option>Scope</option><option>Red Dot</option><option>Light</option><option>Laser</option><option>Grip</option><option>Sling</option><option>Magazine</option><option>Bipod</option><option>Muzzle Device</option><option>Case</option><option>Other</option></select></div>
-  <div><label>Make / Model</label><input id="aName"></div>
-  <div><label>Serial / ID</label><input id="aSerial"></div>
- </div>
- <div class="grid2">
-  <div><label>Price</label><input id="aPrice" type="number" min="0" step="0.01"></div>
-  <div><label>Notes</label><input id="aNotes"></div>
- </div><div class="grid2">
-  <div><label>Accessory Photo</label><input id="aPhoto" type="file" accept="image/*"></div>
-  <div><label>Purchase Date</label><input id="aDate" type="date"></div>
- </div>
- <button class="btn secondary" id="addAccessoryBtn" type="button">Add Accessory</button>
- <div id="accessoryDraftList"></div>
- <button class="btn success" id="saveItemBtn">Save Firearm</button>
- <button class="btn secondary" id="clearItemBtn">Clear Form</button>
-</div></dialog>
-
-<dialog id="lockDialog"><div class="modal lock">
- <h2>Catalog Locked</h2>
- <p class="muted">Enter your PIN to continue.</p>
- <input id="unlockPin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN">
- <button class="btn" id="unlockBtn">Unlock</button>
- <p id="unlockStatus" class="muted"></p>
-</div></dialog>
+<div id="editorModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="actions" style="justify-content:space-between;align-items:center">
+      <h2 id="editorTitle" style="margin:0">Add Firearm</h2>
+      <button class="btn btn-light" onclick="closeEditor()">✕</button>
+    </div>
+    <input id="editId" type="hidden">
+    <div class="fields" style="margin-top:14px">
+      <div class="field"><label>Type *</label><select id="fType"><option>Pistol</option><option>Rifle</option><option>Shotgun</option><option>Revolver</option><option>Suppressor</option><option>Other</option></select></div>
+      <div class="field"><label>Manufacturer *</label><input id="fManufacturer"></div>
+      <div class="field"><label>Model *</label><input id="fModel"></div>
+      <div class="field"><label>Caliber / Gauge</label><input id="fCaliber"></div>
+      <div class="field"><label>Serial number</label><input id="fSerial"></div>
+      <div class="field"><label>Storage location</label><input id="fLocation" placeholder="Example: Main safe – shelf 2"></div>
+      <div class="field"><label>Purchase date</label><input id="fPurchaseDate" type="date"></div>
+      <div class="field"><label>Purchase price</label><input id="fPurchasePrice" type="number" min="0" step=".01"></div>
+      <div class="field"><label>Estimated value</label><input id="fValue" type="number" min="0" step=".01"></div>
+      <div class="field"><label>Condition</label><select id="fCondition"><option>New</option><option>Excellent</option><option>Very Good</option><option>Good</option><option>Fair</option><option>Poor</option></select></div>
+    </div>
+    <div class="field"><label>Photos</label><input id="fPhotos" type="file" accept="image/*" multiple onchange="previewPhotos(event)"><div id="photoPreview" class="photo-preview" style="margin-top:8px"></div></div>
+    <div class="field"><label>Accessories</label><div id="accessoryList"></div><button class="btn btn-light" onclick="addAccessoryRow()">＋ Add accessory</button></div>
+    <div class="field"><label>Notes / next upgrade</label><textarea id="fNotes"></textarea></div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="saveItem()">Save Item</button>
+      <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
-(() => {
-"use strict";
-const $=id=>document.getElementById(id);
-const DB="FirearmCatalogProV2", VERSION=1;
-let db, data={items:[],maintenance:[],wishlist:[]};
-let draftAccessories=[], draftPhotos=[];
-const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(Number(n)||0);
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2);
-const nameOf=x=>[x.make,x.model].filter(Boolean).join(" ")||"Unnamed";
+const KEY='firearmCatalogV3';
+let state=loadState();
+let pendingPhotos=[];
+let deferredPrompt=null;
 
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,VERSION);r.onupgradeneeded=e=>{const d=e.target.result;["items","maintenance","wishlist"].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:"id"})})};r.onsuccess=e=>{db=e.target.result;res()};r.onerror=()=>rej(r.error)})}
-function all(store){return new Promise((res,rej)=>{const r=db.transaction(store,"readonly").objectStore(store).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
-function put(store,obj){return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).put(obj);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
-function del(store,id){return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
-function clear(store){return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
-async function load(){data.items=await all("items");data.maintenance=await all("maintenance");data.wishlist=await all("wishlist");renderAll()}
-function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===id))}
-document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+function defaultState(){return {items:[],settings:{theme:'light',pin:''},version:3}}
+function loadState(){try{return {...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return defaultState()}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
+function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0)}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function id(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function hashPin(pin){let h=2166136261;for(const c of pin){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
 
-function renderAll(){renderDashboard();renderInventory();renderSafeMap();renderMaintenance();renderWishlist();renderReport();populateItemSelect()}
-function renderDashboard(){
- $("dItems").textContent=data.items.length;
- $("dAccessories").textContent=data.items.reduce((s,x)=>s+(x.accessories||[]).length,0);
- $("dValue").textContent=money(data.items.reduce((s,x)=>s+(Number(x.estimatedValue)||Number(x.purchasePrice)||0),0));
- $("dMaintenance").textContent=data.maintenance.length;
- const recent=[...data.items].sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0,5);
- $("recentList").innerHTML=recent.length?recent.map(x=>`<div class="subcard"><strong>${esc(nameOf(x))}</strong><br><span class="muted">${esc(x.type)} • ${esc(x.location||"No location")}</span></div>`).join(""):"No items yet.";
+function showView(name,btn){
+  ['dashboard','inventory','reports','backup','settings'].forEach(v=>document.getElementById(v+'View').classList.toggle('hidden',v!==name));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));
+  renderAll();
+}
+function renderAll(){renderStats();renderRecent();renderInventory();renderReport();renderLocations()}
+function renderStats(){
+  document.getElementById('statCount').textContent=state.items.length;
+  document.getElementById('statAccessories').textContent=state.items.reduce((n,i)=>n+(i.accessories?.length||0),0);
+  document.getElementById('statPurchase').textContent=money(state.items.reduce((n,i)=>n+(+i.purchasePrice||0),0));
+  document.getElementById('statValue').textContent=money(state.items.reduce((n,i)=>n+(+i.value||0),0));
+}
+function itemCard(i){
+  const photo=i.photos?.[0];
+  return `<article class="item">
+    ${photo?`<img src="${photo}" alt="">`:`<div style="height:190px;display:grid;place-items:center;background:#e5e7eb;color:#475569;font-size:3rem">◫</div>`}
+    <div class="item-body">
+      <h3>${esc(i.manufacturer)} ${esc(i.model)}</h3>
+      <div class="meta">${esc(i.type)}${i.caliber?' • '+esc(i.caliber):''}<br>${i.serial?'Serial: '+esc(i.serial)+'<br>':''}${i.location?'Location: '+esc(i.location):''}</div>
+      <span class="tag">${money(i.value)} value</span><span class="tag">${i.accessories?.length||0} accessories</span>
+      <div class="actions no-print" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="editItem('${i.id}')">Edit</button>
+        <button class="btn btn-danger" onclick="deleteItem('${i.id}')">Delete</button>
+        <button class="btn btn-light" onclick="printLabel('${i.id}')">Label</button>
+      </div>
+    </div></article>`
+}
+function renderRecent(){
+  const el=document.getElementById('recentList'); const items=[...state.items].sort((a,b)=>b.updated-a.updated).slice(0,3);
+  el.innerHTML=items.length?items.map(itemCard).join(''):'<div class="empty">No items yet. Tap “Add Firearm” to begin.</div>';
 }
 function renderInventory(){
- const q=$("searchInput").value.trim().toLowerCase(), ft=$("filterType").value, sort=$("sortInventory").value;
- let rows=data.items.filter(x=>{
-  const blob=[x.type,x.make,x.model,x.serial,x.caliber,x.condition,x.location,x.upgrade,x.notes,...(x.accessories||[]).flatMap(a=>[a.type,a.name,a.serial,a.notes])].join(" ").toLowerCase();
-  return(!q||blob.includes(q))&&(!ft||x.type===ft)
- });
- rows.sort((a,b)=>sort==="name"?nameOf(a).localeCompare(nameOf(b)):sort==="type"?String(a.type).localeCompare(String(b.type)):sort==="value"?(Number(b.estimatedValue)||0)-(Number(a.estimatedValue)||0):String(b.updatedAt).localeCompare(String(a.updatedAt)));
- $("inventoryCount").textContent=`${rows.length} of ${data.items.length}`;
- $("inventoryList").innerHTML=rows.length?rows.map(x=>{
-  const photos=x.photos||[], first=photos[0];
-  const acc=(x.accessories||[]).map(a=>`<div class="subcard"><strong>${esc(a.type||"Accessory")}</strong> — ${esc(a.name||"")}<br><span class="muted">Serial/ID: ${esc(a.serial||"N/A")} • ${a.price?money(a.price):"No price"}</span>${a.notes?`<br>${esc(a.notes)}`:""}</div>`).join("");
-  return `<article class="item">
-   <div class="itemhead"><div><span class="pill">${esc(x.type)}</span>${x.favorite?'<span class="pill favorite">★ Favorite</span>':""}<h3>${esc(nameOf(x))}</h3></div>${first?`<img class="thumb" src="${first}" alt="">`:""}</div>
-   <p><strong>Serial:</strong> ${esc(x.serial)}</p><p><strong>Caliber/Gauge:</strong> ${esc(x.caliber||"N/A")}</p>
-   <p><strong>Condition:</strong> ${esc(x.condition||"N/A")}</p><p><strong>Location:</strong> ${esc(x.location||"N/A")}</p>
-   <p><strong>Purchase:</strong> ${esc(x.purchaseDate||"N/A")} ${x.purchasePrice?"• "+money(x.purchasePrice):""}</p>
-   <p><strong>Estimated value:</strong> ${x.estimatedValue?money(x.estimatedValue):"N/A"}</p>
-   <p><strong>Next upgrade:</strong> ${esc(x.upgrade||"None")}</p><p><strong>Notes:</strong> ${esc(x.notes||"None")}</p>
-   ${photos.length?`<div class="gallery">${photos.map(p=>`<img src="${p}" alt="">`).join("")}</div>`:""}
-   <h3>Accessories</h3>${acc||'<p class="muted">None recorded.</p>'}
-   <button class="btn inline" onclick="editInventory('${x.id}')">Edit</button><button class="btn danger inline" onclick="deleteInventory('${x.id}')">Delete</button>
-  </article>`
- }).join(""):'<p class="muted">No matching items.</p>';
+  const el=document.getElementById('inventoryList'); if(!el)return;
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const t=document.getElementById('typeFilter')?.value||'';
+  const l=document.getElementById('locationFilter')?.value||'';
+  const items=state.items.filter(i=>{
+    const hay=[i.manufacturer,i.model,i.caliber,i.serial,i.location,i.notes,i.type].join(' ').toLowerCase();
+    return (!q||hay.includes(q))&&(!t||i.type===t)&&(!l||i.location===l)
+  });
+  el.innerHTML=items.length?items.map(itemCard).join(''):'<div class="empty">No matching items.</div>';
 }
-function renderSafeMap(){
- const groups={};data.items.forEach(x=>{const k=x.location?.trim()||"Unassigned";(groups[k]??=[]).push(x)});
- $("safeMapList").innerHTML=Object.keys(groups).length?Object.keys(groups).sort().map(k=>`<div class="item"><h3>${esc(k)}</h3>${groups[k].map(x=>`<div class="subcard"><strong>${esc(nameOf(x))}</strong><br><span class="muted">${esc(x.type)} • ${esc(x.caliber||"N/A")}</span></div>`).join("")}</div>`).join(""):'<p class="muted">No storage locations entered yet.</p>';
-}
-function populateItemSelect(){
- $("maintItem").innerHTML='<option value="">Select firearm</option>'+data.items.sort((a,b)=>nameOf(a).localeCompare(nameOf(b))).map(x=>`<option value="${x.id}">${esc(nameOf(x))}</option>`).join("");
-}
-function renderMaintenance(){
- const map=Object.fromEntries(data.items.map(x=>[x.id,nameOf(x)]));
- const rows=[...data.maintenance].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
- $("maintenanceList").innerHTML=rows.length?rows.map(m=>`<div class="item"><h3>${esc(map[m.itemId]||"Deleted item")}</h3><p><strong>Date:</strong> ${esc(m.date||"N/A")} • <strong>Rounds:</strong> ${esc(m.rounds||0)}</p><p><strong>Work:</strong> ${esc(m.work)}</p><p>${esc(m.notes||"")}</p><button class="btn danger inline" onclick="deleteMaintenance('${m.id}')">Delete</button></div>`).join(""):'<p class="muted">No maintenance entries.</p>';
-}
-function renderWishlist(){
- const rows=[...data.wishlist].sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]??9)-({High:0,Medium:1,Low:2}[b.priority]??9));
- $("wishlistList").innerHTML=rows.length?rows.map(w=>`<div class="item"><span class="pill">${esc(w.category)}</span><span class="pill">${esc(w.priority)} priority</span><h3>${esc(w.name)}</h3><p><strong>Target:</strong> ${w.price?money(w.price):"N/A"} • <strong>Source:</strong> ${esc(w.store||"N/A")}</p><p>${esc(w.notes||"")}</p><button class="btn danger inline" onclick="deleteWish('${w.id}')">Delete</button></div>`).join(""):'<p class="muted">No wishlist items.</p>';
+function renderLocations(){
+  const sel=document.getElementById('locationFilter'); if(!sel)return;
+  const current=sel.value;
+  const locs=[...new Set(state.items.map(i=>i.location).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">All locations</option>'+locs.map(x=>`<option ${x===current?'selected':''}>${esc(x)}</option>`).join('');
 }
 function renderReport(){
- $("reportBody").innerHTML=data.items.map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(nameOf(x))}</td><td>${esc(x.serial)}</td><td>${esc(x.caliber||"")}</td><td>${esc(x.location||"")}</td><td>${x.estimatedValue?money(x.estimatedValue):""}</td></tr>`).join("");
+  const rows=document.getElementById('reportRows'); if(!rows)return;
+  rows.innerHTML=state.items.map(i=>`<tr><td>${esc(i.manufacturer)} ${esc(i.model)}</td><td>${esc(i.type)}</td><td>${esc(i.serial||'')}</td><td>${esc(i.location||'')}</td><td>${money(i.purchasePrice)}</td><td>${money(i.value)}</td></tr>`).join('');
+  document.getElementById('reportSummary').textContent=`${state.items.length} items • Purchase total ${money(state.items.reduce((n,i)=>n+(+i.purchasePrice||0),0))} • Estimated value ${money(state.items.reduce((n,i)=>n+(+i.value||0),0))}`;
 }
-
-function resetItemForm(){
- $("itemFormTitle").textContent="Add Firearm";$("editItemId").value="";
- ["fType","fMake","fModel","fSerial","fCaliber","fCondition","fPurchaseDate","fPurchasePrice","fEstimatedValue","fLocation","fUpgrade","fNotes","aType","aName","aSerial","aPrice","aNotes"].forEach(id=>$(id).value="");
- $("fFavorite").value="false";$("fPhotos").value="";draftAccessories=[];draftPhotos=[];renderDrafts()
+function openEditor(){
+  document.getElementById('editorTitle').textContent='Add Firearm'; document.getElementById('editId').value='';
+  ['Manufacturer','Model','Caliber','Serial','Location','PurchasePrice','Value','Notes','PurchaseDate'].forEach(x=>document.getElementById('f'+x).value='');
+  document.getElementById('fType').value='Pistol';document.getElementById('fCondition').value='Excellent';
+  pendingPhotos=[];document.getElementById('photoPreview').innerHTML='';document.getElementById('accessoryList').innerHTML='';addAccessoryRow();
+  document.getElementById('editorModal').classList.remove('hidden')
 }
-function renderDrafts(){
- $("accessoryDraftList").innerHTML=draftAccessories.map((a,i)=>`<div class="subcard"><strong>${esc(a.type)}</strong> — ${esc(a.name)}<br><span class="muted">${esc(a.serial||"N/A")} ${a.price?"• "+money(a.price):""}</span><button class="btn danger inline" type="button" onclick="removeDraftAccessory(${i})">Remove</button></div>`).join("");
- $("photoPreview").innerHTML=draftPhotos.map((p,i)=>`<div><img src="${p}" alt=""><button type="button" class="btn danger" onclick="removeDraftPhoto(${i})">Remove</button></div>`).join("");
+function closeEditor(){document.getElementById('editorModal').classList.add('hidden')}
+function addAccessoryRow(name='',serial=''){
+  const d=document.createElement('div');d.className='accessory-row';
+  d.innerHTML=`<input class="acc-name" placeholder="Accessory name/model" value="${esc(name)}"><input class="acc-serial" placeholder="Serial number" value="${esc(serial)}"><button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>`;
+  document.getElementById('accessoryList').appendChild(d)
 }
-window.removeDraftAccessory=i=>{draftAccessories.splice(i,1);renderDrafts()}
-window.removeDraftPhoto=i=>{draftPhotos.splice(i,1);renderDrafts()}
-$("addAccessoryBtn").onclick=()=>{
- const type=$("aType").value,name=$("aName").value.trim();if(!type||!name){alert("Select an accessory type and enter its make/model.");return}
- draftAccessories.push({type,name,serial:$("aSerial").value.trim(),price:$("aPrice").value,notes:$("aNotes").value.trim()});
- ["aType","aName","aSerial","aPrice","aNotes"].forEach(id=>$(id).value="");renderDrafts()
-};
-$("fPhotos").onchange=async e=>{
- const files=[...e.target.files];for(const file of files){if(file.size>12*1024*1024){alert(file.name+" is larger than 12 MB and was skipped.");continue}draftPhotos.push(await compress(file))}
- renderDrafts();e.target.value=""
-};
-function compress(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.8))};img.onerror=rej;img.src=e.target.result};r.onerror=rej;r.readAsDataURL(file)})}
-
-$("addItemFab").onclick=()=>{resetItemForm();$("itemDialog").showModal()}
-$("closeItemDialog").onclick=()=>$("itemDialog").close()
-$("clearItemBtn").onclick=resetItemForm
-$("saveItemBtn").onclick=async()=>{
- const type=$("fType").value,make=$("fMake").value.trim(),model=$("fModel").value.trim(),serial=$("fSerial").value.trim();
- if(!type||!make||!model||!serial){alert("Type, make, model, and serial number are required.");return}
- const old=data.items.find(x=>x.id===$("editItemId").value),now=new Date().toISOString();
- await put("items",{id:old?.id||uid(),type,make,model,serial,caliber:$("fCaliber").value.trim(),condition:$("fCondition").value,purchaseDate:$("fPurchaseDate").value,purchasePrice:$("fPurchasePrice").value,estimatedValue:$("fEstimatedValue").value,location:$("fLocation").value.trim(),upgrade:$("fUpgrade").value.trim(),favorite:$("fFavorite").value==="true",notes:$("fNotes").value.trim(),photos:[...draftPhotos],accessories:[...draftAccessories],createdAt:old?.createdAt||now,updatedAt:now});
- $("itemDialog").close();resetItemForm();await load();showView("inventory")
+function previewPhotos(e){
+  const files=[...e.target.files].slice(0,6);
+  Promise.all(files.map(f=>new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.readAsDataURL(f)}))).then(arr=>{pendingPhotos=arr;renderPhotoPreview()})
 }
-window.editInventory=id=>{
- const x=data.items.find(v=>v.id===id);if(!x)return;$("itemFormTitle").textContent="Edit Firearm";$("editItemId").value=x.id;
- const map={fType:x.type,fMake:x.make,fModel:x.model,fSerial:x.serial,fCaliber:x.caliber,fCondition:x.condition,fPurchaseDate:x.purchaseDate,fPurchasePrice:x.purchasePrice,fEstimatedValue:x.estimatedValue,fLocation:x.location,fUpgrade:x.upgrade,fNotes:x.notes};Object.entries(map).forEach(([k,v])=>$(k).value=v||"");
- $("fFavorite").value=String(!!x.favorite);draftAccessories=[...(x.accessories||[])];draftPhotos=[...(x.photos||[])];renderDrafts();$("itemDialog").showModal()
+function renderPhotoPreview(){document.getElementById('photoPreview').innerHTML=pendingPhotos.map(x=>`<img src="${x}">`).join('')}
+function saveItem(){
+  const manufacturer=document.getElementById('fManufacturer').value.trim(),model=document.getElementById('fModel').value.trim();
+  if(!manufacturer||!model){alert('Manufacturer and model are required.');return}
+  const accessories=[...document.querySelectorAll('.accessory-row')].map(r=>({name:r.querySelector('.acc-name').value.trim(),serial:r.querySelector('.acc-serial').value.trim()})).filter(a=>a.name||a.serial);
+  const editId=document.getElementById('editId').value;
+  const old=state.items.find(i=>i.id===editId);
+  const item={id:editId||id(),type:fType.value,manufacturer,model,caliber:fCaliber.value.trim(),serial:fSerial.value.trim(),location:fLocation.value.trim(),purchaseDate:fPurchaseDate.value,purchasePrice:+fPurchasePrice.value||0,value:+fValue.value||0,condition:fCondition.value,notes:fNotes.value.trim(),photos:pendingPhotos.length?pendingPhotos:(old?.photos||[]),accessories,updated:Date.now(),created:old?.created||Date.now()};
+  if(old)state.items=state.items.map(i=>i.id===editId?item:i);else state.items.push(item);
+  persist();closeEditor();renderAll()
 }
-window.deleteInventory=async id=>{const x=data.items.find(v=>v.id===id);if(confirm(`Delete ${nameOf(x)}?`)){await del("items",id);await load()}}
-$("searchInput").oninput=renderInventory;$("filterType").onchange=renderInventory;$("sortInventory").onchange=renderInventory;
-
-$("addMaintBtn").onclick=async()=>{
- const itemId=$("maintItem").value,date=$("maintDate").value,work=$("maintWork").value.trim();if(!itemId||!date||!work){alert("Choose a firearm, date, and work performed.");return}
- await put("maintenance",{id:uid(),itemId,date,rounds:$("maintRounds").value,work,notes:$("maintNotes").value.trim(),createdAt:new Date().toISOString()});
- ["maintDate","maintRounds","maintWork","maintNotes"].forEach(id=>$(id).value="");await load()
+function editItem(itemId){
+  const i=state.items.find(x=>x.id===itemId);if(!i)return;
+  openEditor();document.getElementById('editorTitle').textContent='Edit Firearm';editId.value=i.id;fType.value=i.type;fManufacturer.value=i.manufacturer;fModel.value=i.model;fCaliber.value=i.caliber||'';fSerial.value=i.serial||'';fLocation.value=i.location||'';fPurchaseDate.value=i.purchaseDate||'';fPurchasePrice.value=i.purchasePrice||'';fValue.value=i.value||'';fCondition.value=i.condition||'Good';fNotes.value=i.notes||'';
+  pendingPhotos=i.photos||[];renderPhotoPreview();accessoryList.innerHTML='';(i.accessories?.length?i.accessories:[{}]).forEach(a=>addAccessoryRow(a.name||'',a.serial||''))
 }
-window.deleteMaintenance=async id=>{if(confirm("Delete this maintenance entry?")){await del("maintenance",id);await load()}}
-
-$("addWishBtn").onclick=async()=>{
- const name=$("wishName").value.trim();if(!name){alert("Enter a wishlist item name.");return}
- await put("wishlist",{id:uid(),category:$("wishCategory").value,name,price:$("wishPrice").value,store:$("wishStore").value.trim(),priority:$("wishPriority").value,notes:$("wishNotes").value.trim(),createdAt:new Date().toISOString()});
- ["wishName","wishPrice","wishStore","wishNotes"].forEach(id=>$(id).value="");await load()
+function deleteItem(itemId){if(confirm('Delete this item?')){state.items=state.items.filter(i=>i.id!==itemId);persist();renderAll()}}
+function printLabel(itemId){
+  const i=state.items.find(x=>x.id===itemId);if(!i)return;
+  const w=window.open('','_blank','width=500,height=500');
+  w.document.write(`<html><head><title>Inventory Label</title><style>body{font-family:Arial;padding:30px}.label{border:3px solid #111;padding:24px;border-radius:14px}h1{font-size:24px}.code{font-family:monospace;font-size:18px;word-break:break-all}</style></head><body><div class="label"><h1>${esc(i.manufacturer)} ${esc(i.model)}</h1><p>${esc(i.type)} ${esc(i.caliber||'')}</p><p>Serial: ${esc(i.serial||'N/A')}</p><p>Location: ${esc(i.location||'')}</p><p class="code">Catalog ID: ${i.id}</p></div><script>window.print()<\/script></body></html>`)
 }
-window.deleteWish=async id=>{if(confirm("Delete this wishlist item?")){await del("wishlist",id);await load()}}
-
-$("exportBtn").onclick=()=>{
- const payload={app:"Firearm Catalog Pro",version:"2.0",exportedAt:new Date().toISOString(),data};
- const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`firearm-catalog-pro-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)
+function exportBackup(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='firearm_catalog_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)
 }
-$("importFile").onchange=async e=>{
- const file=e.target.files[0];if(!file)return;
- try{const parsed=JSON.parse(await file.text()),incoming=parsed.data||parsed;if(!incoming.items||!incoming.maintenance||!incoming.wishlist)throw Error();
- if(!confirm("Replace the current catalog with this backup?"))return;
- for(const s of ["items","maintenance","wishlist"]){await clear(s);for(const row of incoming[s])await put(s,row)}
- await load();alert("Backup imported.")
- }catch{alert("That is not a valid Version 2 backup.")}e.target.value=""
+function importBackup(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.items))throw 0;if(confirm('Replace current catalog with this backup?')){state={...defaultState(),...d};persist();renderAll();alert('Backup imported.')}}catch{alert('That file is not a valid catalog backup.')}};r.readAsText(f);e.target.value=''
 }
-$("printBtn").onclick=()=>window.print()
-
-function applyTheme(dark){document.body.classList.toggle("dark",dark);localStorage.setItem("fcp-theme",dark?"dark":"light")}
-$("themeBtn").onclick=()=>applyTheme(!document.body.classList.contains("dark"))
-$("themeSettingsBtn").onclick=$("themeBtn").onclick
-
-async function hashPin(pin){const bytes=new TextEncoder().encode(pin),hash=await crypto.subtle.digest("SHA-256",bytes);return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("")}
-$("savePinBtn").onclick=async()=>{const p=$("newPin").value;if(!/^\d{4,8}$/.test(p)){alert("Use a 4–8 digit PIN.");return}localStorage.setItem("fcp-pin",await hashPin(p));$("newPin").value="";alert("PIN saved.")}
-$("removePinBtn").onclick=()=>{if(confirm("Remove the PIN lock?")){localStorage.removeItem("fcp-pin");alert("PIN removed.")}}
-$("lockBtn").onclick=()=>{if(localStorage.getItem("fcp-pin")){$("unlockPin").value="";$("unlockStatus").textContent="";$("lockDialog").showModal()}else{showView("settings");alert("Set a PIN first in Settings.")}}
-$("unlockBtn").onclick=async()=>{const h=await hashPin($("unlockPin").value);if(h===localStorage.getItem("fcp-pin"))$("lockDialog").close();else $("unlockStatus").textContent="Incorrect PIN."}
-
-(async()=>{
- applyTheme(localStorage.getItem("fcp-theme")==="dark");
- await openDB();await load();
- $("maintDate").value=new Date().toISOString().slice(0,10);
- if("serviceWorker"in navigator)navigator.serviceWorker.register("service-worker.js").catch(()=>{});
- if(localStorage.getItem("fcp-pin"))$("lockDialog").showModal();
-})().catch(()=>alert("The browser could not open the catalog database."));
-})();
+function savePin(){
+  const p=newPin.value.trim();if(!/^\d{4,8}$/.test(p)){alert('Use a 4–8 digit PIN.');return}state.settings.pin=hashPin(p);persist();newPin.value='';alert('PIN saved.')
+}
+function removePin(){if(confirm('Remove the catalog PIN?')){state.settings.pin='';persist();alert('PIN removed.')}}
+function lockNow(){if(state.settings.pin){lockScreen.classList.remove('hidden');unlockPin.value='';setTimeout(()=>unlockPin.focus(),50)}else alert('Set a PIN in Settings first.')}
+function unlockApp(){if(hashPin(unlockPin.value)===state.settings.pin){lockScreen.classList.add('hidden');lockMessage.textContent=''}else lockMessage.textContent='Incorrect PIN.'}
+function clearAllData(){if(confirm('Permanently delete every item and setting on this device?')){localStorage.removeItem(KEY);state=defaultState();location.reload()}}
+function toggleTheme(){state.settings.theme=state.settings.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=state.settings.theme;persist()}
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;installBtn.classList.add('hidden')}else alert('Use your browser Share/Menu button and choose “Add to Home Screen.”')}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.classList.remove('hidden')});
+document.documentElement.dataset.theme=state.settings.theme||'light';
+if(state.settings.pin)lockScreen.classList.remove('hidden');
+if('serviceWorker'in navigator)navigator.serviceWorker.register('service-worker.js');
+renderAll();
 </script>
 </body>
 </html>

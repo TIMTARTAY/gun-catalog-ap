@@ -1,11 +1,9 @@
 {
-  "name": "Firearm Catalog Pro 4",
-  "short_name": "Catalog Pro 4",
-  "description": "Private on-device firearm, accessory, ammunition, document, maintenance, safe-map, wishlist, and reporting app.",
+  "name": "Firearm Catalog V3",
+  "short_name": "Catalog V3",
   "start_url": "./",
-  "scope": "./",
   "display": "standalone",
-  "background_color": "#eef1f5",
+  "background_color": "#111827",
   "theme_color": "#111827",
   "icons": [
     {

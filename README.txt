@@ -1,13 +1,39 @@
-Firearm Catalog Installable App
+Firearm Catalog V3
+===================
 
-How to use:
-1. Upload the entire folder to a website, GitHub Pages, Netlify, or another web host.
-2. Open index.html from the web link on your phone.
-3. iPhone: Safari > Share > Add to Home Screen.
-4. Android: Chrome > Menu > Add to Home Screen.
-5. Use Export Backup regularly to save a copy of your catalog.
+WHAT IS INCLUDED
+- Installable phone/tablet/desktop PWA
+- Firearm inventory with multiple photos
+- Accessory tracking
+- Search and filters
+- Storage-location tracking
+- Purchase price and estimated value totals
+- PIN lock
+- Dark mode
+- JSON backup/import for moving data between devices
+- Printable inventory report and item labels
+- Offline support after the first successful load
 
-Important:
-- Opening index.html directly from Files may not install correctly on iPhone.
-- For phone installation, it should be hosted at a web link.
-- Your catalog is stored locally on the device/browser unless you export/import a backup.
+IMPORTANT PRIVACY NOTE
+Your records and photos are stored in the browser on each device. Use Export Backup regularly.
+The PIN prevents casual access but is not full encryption. Keep the device protected with its own
+passcode/biometrics and do not publish real inventory data in the GitHub repository.
+
+HOW TO INSTALL ON GITHUB PAGES
+1. Upload all files from this folder to the repository's main branch.
+2. In GitHub, open Settings > Pages.
+3. Under Build and deployment, choose "Deploy from a branch."
+4. Select branch "main" and folder "/ (root)", then Save.
+5. Wait for GitHub Pages to publish the link.
+6. Open that link in Safari or Chrome.
+7. iPhone/iPad: Share > Add to Home Screen.
+8. Android: Chrome menu > Add to Home screen or Install app.
+
+MOVING THE CATALOG TO ANOTHER DEVICE
+1. On the first device, open Backup & Sync > Export Backup.
+2. Send the JSON file to the second device using Files, Drive, email, or another secure method.
+3. On the second device, open Backup & Sync > Import Backup.
+
+AUTOMATIC CLOUD SYNC
+Automatic sync is intentionally not enabled in this package because it requires a private database
+and secure authentication. Manual export/import is ready now and avoids exposing sensitive inventory.
