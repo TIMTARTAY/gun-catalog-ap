@@ -1,39 +1,46 @@
-Firearm Catalog V3
+Firearm Catalog V4
 ===================
 
-WHAT IS INCLUDED
-- Installable phone/tablet/desktop PWA
-- Firearm inventory with multiple photos
-- Accessory tracking
-- Search and filters
-- Storage-location tracking
-- Purchase price and estimated value totals
-- PIN lock
-- Dark mode
-- JSON backup/import for moving data between devices
-- Printable inventory report and item labels
-- Offline support after the first successful load
+NEW IN VERSION 4
+- Automatic migration of existing Version 3 records on the same browser
+- Multiple compressed photos per firearm
+- Attached receipts, manuals, warranties and other documents
+- Accessory values and serial numbers
+- Ammunition inventory with caliber, brand, quantity, lot and location
+- Maintenance, cleaning, inspection and repair logs
+- Upcoming and overdue maintenance reminders inside the app
+- Collection statistics and printable insurance reports
+- Standard JSON backups
+- AES-GCM encrypted backups protected by a passphrase
+- PIN lock, dark mode, offline support and installable PWA behavior
+- Printable item identification labels
 
-IMPORTANT PRIVACY NOTE
-Your records and photos are stored in the browser on each device. Use Export Backup regularly.
-The PIN prevents casual access but is not full encryption. Keep the device protected with its own
-passcode/biometrics and do not publish real inventory data in the GitHub repository.
+INSTALL / UPDATE ON GITHUB PAGES
+1. Upload all six files to the root of the existing repository:
+   README.txt, index.html, manifest.json, service-worker.js, icon-192.png, icon-512.png
+2. Commit directly to the main branch.
+3. GitHub Pages will redeploy automatically.
+4. Open the published site and refresh it.
+5. If the home-screen app still shows Version 3, close it fully and reopen it. If needed,
+   remove the old home-screen icon and add the site to the home screen again.
 
-HOW TO INSTALL ON GITHUB PAGES
-1. Upload all files from this folder to the repository's main branch.
-2. In GitHub, open Settings > Pages.
-3. Under Build and deployment, choose "Deploy from a branch."
-4. Select branch "main" and folder "/ (root)", then Save.
-5. Wait for GitHub Pages to publish the link.
-6. Open that link in Safari or Chrome.
-7. iPhone/iPad: Share > Add to Home Screen.
-8. Android: Chrome menu > Add to Home screen or Install app.
+DATA MIGRATION
+When Version 4 first opens in the same Safari/Chrome browser used for Version 3, it checks for
+the Version 3 local database and copies those firearm records into Version 4. It does not delete
+the Version 3 copy.
 
-MOVING THE CATALOG TO ANOTHER DEVICE
-1. On the first device, open Backup & Sync > Export Backup.
-2. Send the JSON file to the second device using Files, Drive, email, or another secure method.
-3. On the second device, open Backup & Sync > Import Backup.
+SECURITY AND PRIVACY
+- Data stays in the local browser unless a backup is exported.
+- The PIN is a casual-access lock and is not full database encryption.
+- Use the encrypted backup option for sensitive exported backup files.
+- Protect each device with a passcode or biometrics.
+- Do not commit personal inventory records or backups to the public GitHub repository.
 
-AUTOMATIC CLOUD SYNC
-Automatic sync is intentionally not enabled in this package because it requires a private database
-and secure authentication. Manual export/import is ready now and avoids exposing sensitive inventory.
+CROSS-DEVICE USE
+Export a standard or encrypted backup on one device and import it on another.
+Automatic real-time cloud synchronization requires a secure backend, authentication and a
+private database. It is not enabled in this static GitHub Pages package.
+
+STORAGE
+Photos and documents use browser storage. Storage limits vary. Export backups regularly and
+avoid unnecessarily large attachments.
