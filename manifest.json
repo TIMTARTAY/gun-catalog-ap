@@ -1,6 +1,6 @@
 {
-  "name": "Firearm Catalog V5 Ultimate",
-  "short_name": "Catalog V5",
+  "name": "Firearm Catalog V5 Pro",
+  "short_name": "Catalog V5 Pro",
   "description": "Private firearm, accessory, ammunition, document and maintenance catalog",
   "start_url": "./",
   "scope": "./",
@@ -20,5 +20,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "version": "5.1.0"
 }
