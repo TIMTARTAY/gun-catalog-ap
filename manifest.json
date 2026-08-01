@@ -1,10 +1,11 @@
 {
-  "name": "Firearm Catalog V4",
-  "short_name": "Catalog V4",
+  "name": "Firearm Catalog V5 Ultimate",
+  "short_name": "Catalog V5",
+  "description": "Private firearm, accessory, ammunition, document and maintenance catalog",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#07111f",
+  "background_color": "#eef2f7",
   "theme_color": "#0f172a",
   "icons": [
     {

@@ -1,46 +1,31 @@
-Firearm Catalog V4
-===================
+Firearm Catalog V5 Ultimate
+============================
 
-NEW IN VERSION 4
-- Automatic migration of existing Version 3 records on the same browser
-- Multiple compressed photos per firearm
-- Attached receipts, manuals, warranties and other documents
-- Accessory values and serial numbers
-- Ammunition inventory with caliber, brand, quantity, lot and location
-- Maintenance, cleaning, inspection and repair logs
-- Upcoming and overdue maintenance reminders inside the app
-- Collection statistics and printable insurance reports
-- Standard JSON backups
-- AES-GCM encrypted backups protected by a passphrase
-- PIN lock, dark mode, offline support and installable PWA behavior
-- Printable item identification labels
+WHAT IS NEW
+- Automatic migration of Version 3 and Version 4 browser records
+- Firearm inventory with photos, documents, accessories, values and locations
+- Ammunition inventory
+- Maintenance history and upcoming/overdue alerts
+- Search, filters, sorting, printable reports and CSV export
+- Standard JSON backups and AES-GCM encrypted backups
+- PIN lock, dark mode, offline PWA support
+- Network-first app updates to prevent old versions remaining cached
 
 INSTALL / UPDATE ON GITHUB PAGES
-1. Upload all six files to the root of the existing repository:
+1. Keep a backup from your current app before updating.
+2. Upload all six files in this package to the ROOT of your existing repository:
    README.txt, index.html, manifest.json, service-worker.js, icon-192.png, icon-512.png
-2. Commit directly to the main branch.
-3. GitHub Pages will redeploy automatically.
-4. Open the published site and refresh it.
-5. If the home-screen app still shows Version 3, close it fully and reopen it. If needed,
-   remove the old home-screen icon and add the site to the home screen again.
+3. Replace files with the same names.
+4. Commit changes with the message: Upgrade to Firearm Catalog V5 Ultimate
+5. Wait for GitHub Pages to deploy.
+6. Open the exact project address:
+   https://timtartay.github.io/gun-catalog-ap/
+7. Refresh once. Version 5 will migrate compatible Version 3/4 records saved in that browser.
+8. Delete and re-add the Home Screen icon if the installed app still displays an old title.
 
-DATA MIGRATION
-When Version 4 first opens in the same Safari/Chrome browser used for Version 3, it checks for
-the Version 3 local database and copies those firearm records into Version 4. It does not delete
-the Version 3 copy.
-
-SECURITY AND PRIVACY
-- Data stays in the local browser unless a backup is exported.
-- The PIN is a casual-access lock and is not full database encryption.
-- Use the encrypted backup option for sensitive exported backup files.
-- Protect each device with a passcode or biometrics.
-- Do not commit personal inventory records or backups to the public GitHub repository.
-
-CROSS-DEVICE USE
-Export a standard or encrypted backup on one device and import it on another.
-Automatic real-time cloud synchronization requires a secure backend, authentication and a
-private database. It is not enabled in this static GitHub Pages package.
-
-STORAGE
-Photos and documents use browser storage. Storage limits vary. Export backups regularly and
-avoid unnecessarily large attachments.
+IMPORTANT PRIVACY NOTES
+- Records are stored locally in the browser/device.
+- Browser clearing or device loss can erase local records.
+- Export backups regularly and store them privately.
+- Do not upload backup files, serial numbers, receipts or inventory data to a public GitHub repository.
+- PIN lock helps with casual access but does not replace device security.
