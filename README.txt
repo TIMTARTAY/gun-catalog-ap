@@ -1,25 +1,20 @@
-Firearm Catalog V7 Professional
-===============================
+Firearm Catalog V7.1 Professional
 
-INCLUDED FEATURES
-- Fixed inventory saving and immediate list refresh
-- Safer cloud synchronization that prevents an older empty cloud copy from overwriting a new local save
-- Firearm inventory with make, model, serial, caliber, condition and status
-- Multiple photos and attached documents
-- Accessories linked to each firearm
-- Ammunition inventory
-- Storage-location tracking
-- Purchase price, estimated value and collection totals
-- Maintenance, cleaning, round count, cost and due-date tracking
-- Search, filters and sorting
-- Dashboard statistics
-- CSV and printable/PDF-ready insurance reports
-- Standard and encrypted backups
-- PIN lock
-- Secure Supabase multi-device cloud synchronization
+WHAT IS FIXED
+- Safe two-way cloud synchronization across phones and tablets.
+- An empty device automatically downloads the existing cloud inventory.
+- An empty device will not overwrite a cloud catalog containing records.
+- Devices with records safely merge inventory by record ID and last-updated time.
+- Sync status now shows local record counts and the last cloud-sync time.
+- Manual Sync Now performs a safe comparison instead of blindly uploading.
 
-INSTALL/UPDATE
-Upload every file in this folder to the root of the existing GitHub repository and replace the old files. Commit the changes, wait for GitHub Pages to deploy, then open the app and press Update App under Backup & Security or refresh twice.
+INSTALL / UPDATE
+1. Upload every file in this ZIP to the root of the existing GitHub repository.
+2. Replace the older files when prompted.
+3. Commit with: Upgrade to Firearm Catalog V7.1 cloud sync
+4. On each device, open Backup & Security and tap Update App, or refresh the website twice.
+5. Confirm the heading shows Firearm Catalog V7 Professional and Backup & Security shows App version 7.1.0.
+6. Sign into the same account and tap Sync Now.
 
 IMPORTANT
-Keep using the same Supabase project and the same sign-in account on every device. Never put a Supabase secret/service-role key in this browser app.
+Make an Export Backup from the phone that currently contains the inventory before updating.

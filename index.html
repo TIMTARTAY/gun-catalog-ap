@@ -165,7 +165,7 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
-const APP_VERSION='7.0.0';
+const APP_VERSION='7.1.0';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
 const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
@@ -195,13 +195,68 @@ function save(){
 
 function cloudConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'null')||DEFAULT_CLOUD_CONFIG}catch{return DEFAULT_CLOUD_CONFIG}}
 function setSyncStatus(text,kind=''){const el=$('syncStatus');if(!el)return;el.textContent=text;el.className='sync-pill '+kind}
-function renderCloudAccount(){const info=$('cloudAccountInfo');if(!info)return;if(!cloudConfig()){info.textContent='Cloud sync is not configured. Your records remain on this device.';setSyncStatus('Local only','warn')}else if(!cloudUser){info.textContent='Cloud connection saved. Sign in to synchronize devices.';setSyncStatus('Sign in','warn')}else{info.textContent=`Signed in as ${cloudUser.email}. Changes sync automatically.`;setSyncStatus(navigator.onLine?'Synced':'Offline',navigator.onLine?'ok':'warn')} $('signOutBtn')?.classList.toggle('hidden',!cloudUser)}
-async function initCloud(){const cfg=cloudConfig();if(!cfg?.url||!cfg?.key||!window.supabase){renderCloudAccount();return}try{cloudClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data:{session}}=await cloudClient.auth.getSession();cloudUser=session?.user||null;cloudClient.auth.onAuthStateChange(async(_event,session)=>{cloudUser=session?.user||null;renderCloudAccount();if(cloudUser){await subscribeCloud();await initialCloudSync()}});renderCloudAccount();if(cloudUser){await subscribeCloud();await initialCloudSync()}}catch(e){console.error(e);setSyncStatus('Cloud error','err');$('cloudAccountInfo').textContent='Connection error: '+e.message}}
-async function subscribeCloud(){if(!cloudClient||!cloudUser)return;if(cloudChannel)await cloudClient.removeChannel(cloudChannel);cloudChannel=cloudClient.channel('catalog-'+cloudUser.id).on('postgres_changes',{event:'*',schema:'public',table:'catalogs',filter:`user_id=eq.${cloudUser.id}`},()=>{if(!localDirty)setTimeout(()=>pullCloud(false),300)}).subscribe()}
-async function initialCloudSync(){if(!cloudClient||!cloudUser)return;setSyncStatus('Checking…','warn');const {data,error}=await cloudClient.from('catalogs').select('data,updated_at').eq('user_id',cloudUser.id).maybeSingle();if(error){setSyncStatus('Sync error','err');$('cloudAccountInfo').textContent='Cloud error: '+error.message;return}if(!data){if(state.firearms.length||state.ammo.length||state.maintenance.length){if(confirm('No cloud catalog exists yet. Upload the catalog currently stored on this device?'))await pushCloud()}else await pushCloud()}else if(state.firearms.length||state.ammo.length||state.maintenance.length){const useLocal=confirm('A cloud catalog already exists. Tap OK to upload and replace it with this device’s catalog. Tap Cancel to download the cloud catalog to this device.');useLocal?await pushCloud():await pullCloud(true)}else await pullCloud(true)}
-function scheduleCloudSave(){if(!cloudClient||!cloudUser)return;clearTimeout(syncTimer);setSyncStatus('Saving…','warn');syncTimer=setTimeout(pushCloud,900)}
-async function pushCloud(){if(!cloudClient||!cloudUser)return false;try{setSyncStatus('Saving…','warn');const payload=structuredClone(state);const stamp=new Date().toISOString();const {error}=await cloudClient.from('catalogs').upsert({user_id:cloudUser.id,data:payload,updated_at:stamp},{onConflict:'user_id'});if(error)throw error;lastCloudWriteAt=stamp;localDirty=false;setSyncStatus('Synced','ok');renderCloudAccount();return true}catch(e){console.error(e);setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn');$('cloudAccountInfo').textContent='Cloud save error: '+e.message;return false}}
-async function pullCloud(showToast=true){if(!cloudClient||!cloudUser||localDirty)return;try{setSyncStatus('Downloading…','warn');const {data,error}=await cloudClient.from('catalogs').select('data,updated_at').eq('user_id',cloudUser.id).maybeSingle();if(error)throw error;if(data?.data){const cloudTime=Date.parse(data.updated_at||data.data?.meta?.updatedAt||0)||0;const localTime=Date.parse(state.meta?.updatedAt||0)||0;if(cloudTime>=localTime){isApplyingCloud=true;state={firearms:[],ammo:[],maintenance:[],settings:{theme:'light',pinHash:'',migrated:true},meta:{updatedAt:data.updated_at||''},...data.data};localStorage.setItem(STORE_KEY,JSON.stringify(state));renderAll();localDirty=false;isApplyingCloud=false;if(showToast)toast('Cloud catalog downloaded.')}}setSyncStatus('Synced','ok');renderCloudAccount()}catch(e){isApplyingCloud=false;console.error(e);setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn')}}
+function catalogCounts(c=state){return{firearms:Array.isArray(c?.firearms)?c.firearms.length:0,ammo:Array.isArray(c?.ammo)?c.ammo.length:0,maintenance:Array.isArray(c?.maintenance)?c.maintenance.length:0}}
+function hasCatalogRecords(c=state){const n=catalogCounts(c);return n.firearms+n.ammo+n.maintenance>0}
+function formatSyncTime(value){if(!value)return'Never';const d=new Date(value);return Number.isNaN(d.getTime())?'Unknown':d.toLocaleString()}
+function renderCloudAccount(){
+ const info=$('cloudAccountInfo');if(!info)return;
+ if(!cloudConfig()){info.textContent='Cloud sync is not configured. Your records remain on this device.';setSyncStatus('Local only','warn')}
+ else if(!cloudUser){info.textContent='Cloud connection saved. Sign in to synchronize devices.';setSyncStatus('Sign in','warn')}
+ else{
+  const n=catalogCounts();
+  info.textContent=`Signed in as ${cloudUser.email}. This device has ${n.firearms} firearm${n.firearms===1?'':'s'}, ${n.ammo} ammunition entr${n.ammo===1?'y':'ies'}, and ${n.maintenance} maintenance record${n.maintenance===1?'':'s'}. Last cloud sync: ${formatSyncTime(lastCloudWriteAt||state.meta?.lastCloudSync)}.`;
+  if(!navigator.onLine)setSyncStatus('Offline','warn');
+ }
+ $('signOutBtn')?.classList.toggle('hidden',!cloudUser)
+}
+async function initCloud(){const cfg=cloudConfig();if(!cfg?.url||!cfg?.key||!window.supabase){renderCloudAccount();return}try{cloudClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data:{session}}=await cloudClient.auth.getSession();cloudUser=session?.user||null;cloudClient.auth.onAuthStateChange(async(_event,session)=>{cloudUser=session?.user||null;renderCloudAccount();if(cloudUser){await subscribeCloud();await safeCloudSync(false)}});renderCloudAccount();if(cloudUser){await subscribeCloud();await safeCloudSync(false)}}catch(e){console.error(e);setSyncStatus('Cloud error','err');$('cloudAccountInfo').textContent='Connection error: '+e.message}}
+async function subscribeCloud(){if(!cloudClient||!cloudUser)return;if(cloudChannel)await cloudClient.removeChannel(cloudChannel);cloudChannel=cloudClient.channel('catalog-'+cloudUser.id).on('postgres_changes',{event:'*',schema:'public',table:'catalogs',filter:`user_id=eq.${cloudUser.id}`},()=>{if(!localDirty)setTimeout(()=>safeCloudSync(false),350)}).subscribe()}
+function itemTime(x){return Date.parse(x?.updatedAt||x?.date||0)||0}
+function mergeArray(local=[],remote=[]){const map=new Map();for(const x of [...remote,...local]){if(!x||!x.id)continue;const old=map.get(x.id);if(!old||itemTime(x)>=itemTime(old))map.set(x.id,x)}return [...map.values()]}
+function mergeCatalog(local,remote){
+ const localTime=Date.parse(local?.meta?.updatedAt||0)||0,remoteTime=Date.parse(remote?.meta?.updatedAt||0)||0;
+ return{
+  ...remote,...local,
+  firearms:mergeArray(local?.firearms,remote?.firearms),
+  ammo:mergeArray(local?.ammo,remote?.ammo),
+  maintenance:mergeArray(local?.maintenance,remote?.maintenance),
+  settings:{...(remote?.settings||{}),...(local?.settings||{})},
+  meta:{...(remote?.meta||{}),...(local?.meta||{}),updatedAt:new Date(Math.max(localTime,remoteTime,Date.now())).toISOString()}
+ }
+}
+async function readCloud(){const {data,error}=await cloudClient.from('catalogs').select('data,updated_at').eq('user_id',cloudUser.id).maybeSingle();if(error)throw error;return data}
+async function writeCloud(payload){const stamp=new Date().toISOString();payload.meta={...(payload.meta||{}),updatedAt:payload.meta?.updatedAt||stamp,lastCloudSync:stamp};const {error}=await cloudClient.from('catalogs').upsert({user_id:cloudUser.id,data:payload,updated_at:stamp},{onConflict:'user_id'});if(error)throw error;lastCloudWriteAt=stamp;return stamp}
+function applyCloudCatalog(payload,stamp,showToast){isApplyingCloud=true;state={firearms:[],ammo:[],maintenance:[],settings:{theme:'light',pinHash:'',migrated:true},meta:{},...payload};state.meta={...(state.meta||{}),lastCloudSync:stamp||new Date().toISOString()};localStorage.setItem(STORE_KEY,JSON.stringify(state));localDirty=false;isApplyingCloud=false;renderAll();if(showToast)toast('Cloud inventory downloaded to this device.')}
+async function safeCloudSync(showToast=true){
+ if(!cloudClient||!cloudUser)return false;
+ try{
+  setSyncStatus('Checking…','warn');
+  const row=await readCloud();
+  const remote=row?.data||null;
+  const localHas=hasCatalogRecords(state),remoteHas=hasCatalogRecords(remote);
+  if(!row){
+   await writeCloud(structuredClone(state));localDirty=false;
+   if(showToast)toast(localHas?'This device’s catalog was uploaded.':'Cloud catalog created.');
+  }else if(!localHas&&remoteHas){
+   applyCloudCatalog(remote,row.updated_at,showToast);
+  }else if(localHas&&!remoteHas){
+   await writeCloud(structuredClone(state));localDirty=false;
+   if(showToast)toast('This device’s inventory was uploaded to the cloud.');
+  }else if(localHas&&remoteHas){
+   const merged=mergeCatalog(state,remote);
+   applyCloudCatalog(merged,row.updated_at,false);
+   await writeCloud(structuredClone(state));localDirty=false;
+   if(showToast)toast('Cloud and device inventories were safely merged.');
+  }else{
+   state.meta={...(state.meta||{}),lastCloudSync:row.updated_at||new Date().toISOString()};localStorage.setItem(STORE_KEY,JSON.stringify(state));
+   if(showToast)toast('Cloud sync complete.');
+  }
+  setSyncStatus('Synced','ok');renderCloudAccount();return true;
+ }catch(e){isApplyingCloud=false;console.error(e);setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn');$('cloudAccountInfo').textContent='Cloud sync error: '+e.message;return false}
+}
+function scheduleCloudSave(){if(!cloudClient||!cloudUser)return;clearTimeout(syncTimer);setSyncStatus('Saving…','warn');syncTimer=setTimeout(()=>safeCloudSync(false),900)}
+async function pushCloud(){return safeCloudSync(false)}
+async function pullCloud(showToast=true){return safeCloudSync(showToast)}
 
 function load(){
  try{const raw=localStorage.getItem(STORE_KEY);if(raw)state={...state,...JSON.parse(raw)};migrateLegacy()}catch(e){console.error(e);toast('Could not read saved data.')}
@@ -317,9 +372,9 @@ $('saveCloudConfigBtn').onclick=async()=>{const url=$('cloudUrl').value.trim().r
 $('removeCloudConfigBtn').onclick=()=>{if(confirm('Remove the cloud connection from this device? Local catalog data will remain.')){localStorage.removeItem(CLOUD_CONFIG_KEY);location.reload()}};
 $('cloudSignInBtn').onclick=async()=>{if(!cloudClient)return alert('Save the Supabase connection first.');const email=$('cloudEmail').value.trim(),password=$('cloudPassword').value;const {error}=await cloudClient.auth.signInWithPassword({email,password});if(error)return alert(error.message);closeModal('cloudModal');toast('Signed in. Starting sync…')};
 $('cloudSignUpBtn').onclick=async()=>{if(!cloudClient)return alert('Save the Supabase connection first.');const email=$('cloudEmail').value.trim(),password=$('cloudPassword').value;if(password.length<6)return alert('Use a password with at least 6 characters.');const {error}=await cloudClient.auth.signUp({email,password});if(error)return alert(error.message);alert('Account created. Check your email if confirmation is enabled, then sign in.')};
-$('syncNowBtn').onclick=async()=>{if(!cloudUser)return $('cloudModal').classList.remove('hidden');await pushCloud();toast('Cloud sync complete.')};
+$('syncNowBtn').onclick=async()=>{if(!cloudUser)return $('cloudModal').classList.remove('hidden');await safeCloudSync(true)};
 $('signOutBtn').onclick=async()=>{if(cloudClient){await cloudClient.auth.signOut();cloudUser=null;renderCloudAccount();toast('Signed out.')}};
-window.addEventListener('online',()=>{renderCloudAccount();if(cloudUser)pushCloud()});window.addEventListener('offline',()=>setSyncStatus('Offline','warn'));
+window.addEventListener('online',()=>{renderCloudAccount();if(cloudUser)safeCloudSync(false)});window.addEventListener('offline',()=>setSyncStatus('Offline','warn'));
 
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(console.error));
 load();
