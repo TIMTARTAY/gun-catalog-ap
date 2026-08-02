@@ -54,3 +54,5 @@ For compatibility with the single-file V5 app, the complete catalog—including 
 photos/documents—is stored as one private JSON record. Very large photo/document libraries
 may exceed practical database limits. A future upgrade can move attachments into a private
 Supabase Storage bucket.
+
+This customized build includes the project URL and browser-safe publishable key for project pffjakkbrhaoqmheqogx. Do not add a secret/service-role key to browser files.

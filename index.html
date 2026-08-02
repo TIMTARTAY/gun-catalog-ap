@@ -165,9 +165,10 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
-const APP_VERSION='6.0.0';
+const APP_VERSION='6.0.1';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
+const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
 let state={firearms:[],ammo:[],maintenance:[],settings:{theme:'light',pinHash:'',migrated:false}};
 let cloudClient=null,cloudUser=null,cloudChannel=null,syncTimer=null,isApplyingCloud=false;
 let accessoryDraft=[],photoDraft=[],docDraft=[];
@@ -179,7 +180,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2600)}
 function save(){localStorage.setItem(STORE_KEY,JSON.stringify(state));renderAll();if(!isApplyingCloud)scheduleCloudSave()}
 
-function cloudConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'null')}catch{return null}}
+function cloudConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'null')||DEFAULT_CLOUD_CONFIG}catch{return DEFAULT_CLOUD_CONFIG}}
 function setSyncStatus(text,kind=''){const el=$('syncStatus');if(!el)return;el.textContent=text;el.className='sync-pill '+kind}
 function renderCloudAccount(){const info=$('cloudAccountInfo');if(!info)return;if(!cloudConfig()){info.textContent='Cloud sync is not configured. Your records remain on this device.';setSyncStatus('Local only','warn')}else if(!cloudUser){info.textContent='Cloud connection saved. Sign in to synchronize devices.';setSyncStatus('Sign in','warn')}else{info.textContent=`Signed in as ${cloudUser.email}. Changes sync automatically.`;setSyncStatus(navigator.onLine?'Synced':'Offline',navigator.onLine?'ok':'warn')} $('signOutBtn')?.classList.toggle('hidden',!cloudUser)}
 async function initCloud(){const cfg=cloudConfig();if(!cfg?.url||!cfg?.key||!window.supabase){renderCloudAccount();return}try{cloudClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data:{session}}=await cloudClient.auth.getSession();cloudUser=session?.user||null;cloudClient.auth.onAuthStateChange(async(_event,session)=>{cloudUser=session?.user||null;renderCloudAccount();if(cloudUser){await subscribeCloud();await initialCloudSync()}});renderCloudAccount();if(cloudUser){await subscribeCloud();await initialCloudSync()}}catch(e){console.error(e);setSyncStatus('Cloud error','err');$('cloudAccountInfo').textContent='Connection error: '+e.message}}
