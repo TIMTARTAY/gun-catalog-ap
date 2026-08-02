@@ -1,7 +1,7 @@
 {
-  "name": "Firearm Catalog V5 Pro",
-  "short_name": "Catalog V5 Pro",
-  "description": "Private firearm, accessory, ammunition, document and maintenance catalog",
+  "name": "Firearm Catalog V6 Cloud",
+  "short_name": "Catalog V6",
+  "description": "Private multi-device firearm inventory with secure cloud synchronization",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -20,6 +20,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "version": "5.1.0"
+  ]
 }
