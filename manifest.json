@@ -1,7 +1,7 @@
 {
-  "name": "Firearm Catalog V6 Cloud",
-  "short_name": "Catalog V6",
-  "description": "Private multi-device firearm inventory with secure cloud synchronization",
+  "name": "Firearm Catalog V7 Professional",
+  "short_name": "Catalog V7",
+  "description": "Professional private inventory with photos, accessories, ammunition, maintenance, reports, backups and secure cloud synchronization",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
