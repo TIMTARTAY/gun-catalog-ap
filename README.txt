@@ -1,3 +1,6 @@
+Firearm Catalog V7.1.2
+Fixes repeated Checking/Synced status flicker by preventing background sync feedback loops.
+
 Firearm Catalog V7.1 Professional
 
 WHAT IS FIXED
