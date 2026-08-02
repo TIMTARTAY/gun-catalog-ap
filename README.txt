@@ -13,7 +13,7 @@ INSTALL / UPDATE
 2. Replace the older files when prompted.
 3. Commit with: Upgrade to Firearm Catalog V7.1 cloud sync
 4. On each device, open Backup & Security and tap Update App, or refresh the website twice.
-5. Confirm the heading shows Firearm Catalog V7 Professional and Backup & Security shows App version 7.1.0.
+5. Confirm the heading shows Firearm Catalog V7 Professional and Backup & Security shows App version 7.1.1.
 6. Sign into the same account and tap Sync Now.
 
 IMPORTANT

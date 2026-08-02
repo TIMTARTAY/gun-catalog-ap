@@ -165,12 +165,12 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
-const APP_VERSION='7.1.0';
+const APP_VERSION='7.1.1';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
 const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
 let state={firearms:[],ammo:[],maintenance:[],settings:{theme:'light',pinHash:'',migrated:false},meta:{updatedAt:''}};
-let cloudClient=null,cloudUser=null,cloudChannel=null,syncTimer=null,isApplyingCloud=false,localDirty=false,lastCloudWriteAt='';
+let cloudClient=null,cloudUser=null,cloudChannel=null,syncTimer=null,isApplyingCloud=false,localDirty=false,lastCloudWriteAt='',syncInProgress=false,realtimeSyncTimer=null;
 let accessoryDraft=[],photoDraft=[],docDraft=[];
 const $=id=>document.getElementById(id);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(16).slice(2);
@@ -210,7 +210,18 @@ function renderCloudAccount(){
  $('signOutBtn')?.classList.toggle('hidden',!cloudUser)
 }
 async function initCloud(){const cfg=cloudConfig();if(!cfg?.url||!cfg?.key||!window.supabase){renderCloudAccount();return}try{cloudClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data:{session}}=await cloudClient.auth.getSession();cloudUser=session?.user||null;cloudClient.auth.onAuthStateChange(async(_event,session)=>{cloudUser=session?.user||null;renderCloudAccount();if(cloudUser){await subscribeCloud();await safeCloudSync(false)}});renderCloudAccount();if(cloudUser){await subscribeCloud();await safeCloudSync(false)}}catch(e){console.error(e);setSyncStatus('Cloud error','err');$('cloudAccountInfo').textContent='Connection error: '+e.message}}
-async function subscribeCloud(){if(!cloudClient||!cloudUser)return;if(cloudChannel)await cloudClient.removeChannel(cloudChannel);cloudChannel=cloudClient.channel('catalog-'+cloudUser.id).on('postgres_changes',{event:'*',schema:'public',table:'catalogs',filter:`user_id=eq.${cloudUser.id}`},()=>{if(!localDirty)setTimeout(()=>safeCloudSync(false),350)}).subscribe()}
+async function subscribeCloud(){
+ if(!cloudClient||!cloudUser)return;
+ if(cloudChannel)await cloudClient.removeChannel(cloudChannel);
+ cloudChannel=cloudClient.channel('catalog-'+cloudUser.id)
+  .on('postgres_changes',{event:'*',schema:'public',table:'catalogs',filter:`user_id=eq.${cloudUser.id}`},payload=>{
+   const remoteStamp=payload?.new?.updated_at||'';
+   // Ignore this device's own write and avoid a realtime feedback loop.
+   if(syncInProgress||localDirty||(remoteStamp&&lastCloudWriteAt&&remoteStamp===lastCloudWriteAt))return;
+   clearTimeout(realtimeSyncTimer);
+   realtimeSyncTimer=setTimeout(()=>safeCloudSync(false),700);
+  }).subscribe();
+}
 function itemTime(x){return Date.parse(x?.updatedAt||x?.date||0)||0}
 function mergeArray(local=[],remote=[]){const map=new Map();for(const x of [...remote,...local]){if(!x||!x.id)continue;const old=map.get(x.id);if(!old||itemTime(x)>=itemTime(old))map.set(x.id,x)}return [...map.values()]}
 function mergeCatalog(local,remote){
@@ -229,6 +240,8 @@ async function writeCloud(payload){const stamp=new Date().toISOString();payload.
 function applyCloudCatalog(payload,stamp,showToast){isApplyingCloud=true;state={firearms:[],ammo:[],maintenance:[],settings:{theme:'light',pinHash:'',migrated:true},meta:{},...payload};state.meta={...(state.meta||{}),lastCloudSync:stamp||new Date().toISOString()};localStorage.setItem(STORE_KEY,JSON.stringify(state));localDirty=false;isApplyingCloud=false;renderAll();if(showToast)toast('Cloud inventory downloaded to this device.')}
 async function safeCloudSync(showToast=true){
  if(!cloudClient||!cloudUser)return false;
+ if(syncInProgress)return true;
+ syncInProgress=true;
  try{
   setSyncStatus('Checking…','warn');
   const row=await readCloud();
@@ -253,6 +266,7 @@ async function safeCloudSync(showToast=true){
   }
   setSyncStatus('Synced','ok');renderCloudAccount();return true;
  }catch(e){isApplyingCloud=false;console.error(e);setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn');$('cloudAccountInfo').textContent='Cloud sync error: '+e.message;return false}
+ finally{syncInProgress=false}
 }
 function scheduleCloudSave(){if(!cloudClient||!cloudUser)return;clearTimeout(syncTimer);setSyncStatus('Saving…','warn');syncTimer=setTimeout(()=>safeCloudSync(false),900)}
 async function pushCloud(){return safeCloudSync(false)}
