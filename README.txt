@@ -1,15 +1,13 @@
-Firearm Catalog V7.2.2
+Firearm Catalog V7.2.3
 
 FIXED
-- Repairs the JavaScript syntax error in V7.2.1 that disabled every button.
-- Keeps the authoritative deletion-marker fix.
-- Uses a new cache name so devices load the corrected files.
+- Firearm deletion now sends an exact cloud overwrite instead of merging with the old cloud copy.
+- The app verifies that the deleted firearm ID is absent from Supabase before showing success.
+- If Supabase still contains it, the app shows a real cloud error instead of a false success message.
 
 INSTALL
-1. Upload every file in this ZIP to the root of the GitHub repository.
-2. Replace the existing files.
-3. Commit message: V7.2.2 Fix all buttons
-4. Wait about two minutes for GitHub Pages to deploy.
-5. Open the website and refresh twice.
-6. Confirm the heading says Firearm Catalog V7.2.2 Professional.
-7. Test Dashboard, Inventory, View/Edit, and Delete.
+1. Upload and replace all repository files.
+2. Commit message: V7.2.3 Force cloud delete
+3. Wait about two minutes.
+4. Refresh twice and confirm V7.2.3 Professional.
+5. Delete the test firearm.

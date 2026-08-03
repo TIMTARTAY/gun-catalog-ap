@@ -1,4 +1,4 @@
-const CACHE_NAME="firearm-catalog-v7-2-2-2026-08-03-1";
+const CACHE_NAME="firearm-catalog-v7-2-3-2026-08-03-1";
 const STATIC_ASSETS=["./manifest.json","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(STATIC_ASSETS)));self.skipWaiting()});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim()});

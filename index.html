@@ -40,7 +40,7 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <body>
 <header class="app-header">
  <div class="header-row">
-  <div class="brand"><h1>Firearm Catalog V7.2.2 Professional</h1><p>Private collection with secure multi-device sync</p></div>
+  <div class="brand"><h1>Firearm Catalog V7.2.3 Professional</h1><p>Private collection with secure multi-device sync</p></div>
   <div class="head-buttons"><button class="sync-pill" id="syncStatus" title="Cloud sync status">Local only</button><button class="icon-btn" id="themeBtn" title="Theme">◐</button><button class="icon-btn" id="lockBtn" title="Lock">🔒</button></div>
  </div>
  <nav class="tabs" id="tabs">
@@ -165,7 +165,7 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
-const APP_VERSION='7.2.2';
+const APP_VERSION='7.2.3';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
 const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
@@ -306,6 +306,28 @@ async function commitCloudState(actionLabel='Changes'){
  }catch(e){console.error(e);localDirty=true;setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn');$('cloudAccountInfo').textContent=`${actionLabel} saved on this device, but cloud sync failed: ${e.message}`;return false}
  finally{syncInProgress=false}
 }
+async function commitCloudDeletion(deletedId){
+ if(!cloudClient||!cloudUser)return false;
+ clearTimeout(syncTimer);
+ while(syncInProgress)await new Promise(r=>setTimeout(r,100));
+ syncInProgress=true;setSyncStatus('Deleting…','warn');
+ try{
+  const exact=structuredClone(state);
+  exact.firearms=(exact.firearms||[]).filter(x=>x.id!==deletedId);
+  exact.meta={...(exact.meta||{}),deletedFirearms:{...(exact.meta?.deletedFirearms||{}),[deletedId]:exact.meta?.deletedFirearms?.[deletedId]||new Date().toISOString()}};
+  const stamp=await writeCloud(exact);
+  const verify=await readCloud();
+  if(!verify?.data)throw new Error('Cloud verification failed.');
+  if((verify.data.firearms||[]).some(x=>x.id===deletedId))throw new Error('The cloud still contains the deleted record.');
+  applyCloudCatalog(verify.data,verify.updated_at||stamp,false);
+  localDirty=false;setSyncStatus('Synced','ok');renderCloudAccount();return true;
+ }catch(e){
+  console.error(e);localDirty=true;
+  setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn');
+  $('cloudAccountInfo').textContent='Firearm deletion failed in the cloud: '+e.message;
+  return false;
+ }finally{syncInProgress=false}
+}
 async function pushCloud(){return commitCloudState('Changes')}
 async function pullCloud(showToast=true){return safeCloudSync(showToast)}
 
@@ -368,7 +390,7 @@ function resetFirearm(){
 window.openFirearm=()=>{resetFirearm();$('firearmModal').classList.remove('hidden')};
 window.viewFirearm=id=>{const f=state.firearms.find(x=>x.id===id);if(!f)return;resetFirearm();$('firearmModalTitle').textContent='Edit Firearm';$('firearmId').value=f.id;const map={fType:'type',fCondition:'condition',fMake:'make',fModel:'model',fSerial:'serial',fCaliber:'caliber',fPurchaseDate:'purchaseDate',fPurchasePrice:'purchasePrice',fValue:'value',fLocation:'location',fSource:'source',fStatus:'status',fNotes:'notes'};for(const [id,k] of Object.entries(map))$(id).value=f[k]??'';accessoryDraft=structuredClone(f.accessories||[]);photoDraft=structuredClone(f.photos||[]);docDraft=structuredClone(f.docs||[]);renderDrafts();$('firearmModal').classList.remove('hidden')};
 window.duplicateFirearm=id=>{const f=state.firearms.find(x=>x.id===id);if(!f)return;const copy=structuredClone(f);copy.id=uid();copy.serial='';copy.model+=' (Copy)';copy.createdAt=copy.updatedAt=new Date().toISOString();state.firearms.push(copy);save();toast('Item duplicated. Add the correct serial number.')};
-window.deleteFirearm=async id=>{if(confirm('Delete this firearm and its linked records?')){clearTimeout(syncTimer);const stamp=new Date().toISOString();state.meta={...(state.meta||{}),deletedFirearms:{...(state.meta?.deletedFirearms||{}),[id]:stamp}};const linked=state.maintenance.filter(x=>x.firearmId===id).map(x=>x.id);if(linked.length){state.meta.deletedMaintenance={...(state.meta.deletedMaintenance||{})};linked.forEach(mid=>state.meta.deletedMaintenance[mid]=stamp)}state.firearms=state.firearms.filter(x=>x.id!==id);state.maintenance=state.maintenance.filter(x=>x.firearmId!==id);if(!save())return;clearTimeout(syncTimer);renderAll();if(cloudUser){const ok=await commitCloudState('Firearm deletion');toast(ok?'Firearm deleted from every synced device.':'Deleted on this device only. Open Backup & Security to see the cloud error.')}else toast('Firearm deleted on this device.')}};
+window.deleteFirearm=async id=>{if(confirm('Delete this firearm and its linked records?')){clearTimeout(syncTimer);const stamp=new Date().toISOString();state.meta={...(state.meta||{}),deletedFirearms:{...(state.meta?.deletedFirearms||{}),[id]:stamp}};const linked=state.maintenance.filter(x=>x.firearmId===id).map(x=>x.id);if(linked.length){state.meta.deletedMaintenance={...(state.meta.deletedMaintenance||{})};linked.forEach(mid=>state.meta.deletedMaintenance[mid]=stamp)}state.firearms=state.firearms.filter(x=>x.id!==id);state.maintenance=state.maintenance.filter(x=>x.firearmId!==id);if(!save())return;clearTimeout(syncTimer);renderAll();if(cloudUser){const ok=await commitCloudDeletion(id);toast(ok?'Firearm permanently deleted from the cloud.':'Deleted on this device only. Check Backup & Security for the exact cloud error.')}else toast('Firearm deleted on this device.')}};
 $('addAccessoryBtn').onclick=()=>{const name=$('accName').value.trim();if(!name)return alert('Enter the accessory make/model.');accessoryDraft.push({id:uid(),type:$('accType').value,name,serial:$('accSerial').value.trim(),value:Number($('accValue').value||0)});$('accName').value=$('accSerial').value=$('accValue').value='';renderDrafts()};
 function renderDrafts(){
  $('accessoryDraft').innerHTML=accessoryDraft.map((a,i)=>`<div class="file-chip"><span><b>${esc(a.type)}:</b> ${esc(a.name)} ${a.serial?`— ${esc(a.serial)}`:''}</span><button class="btn danger small" type="button" onclick="removeAcc(${i})">Remove</button></div>`).join('');
