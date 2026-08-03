@@ -40,7 +40,7 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <body>
 <header class="app-header">
  <div class="header-row">
-  <div class="brand"><h1>Firearm Catalog V7.2 Professional</h1><p>Private collection with secure multi-device sync</p></div>
+  <div class="brand"><h1>Firearm Catalog V7.2.1 Professional</h1><p>Private collection with secure multi-device sync</p></div>
   <div class="head-buttons"><button class="sync-pill" id="syncStatus" title="Cloud sync status">Local only</button><button class="icon-btn" id="themeBtn" title="Theme">◐</button><button class="icon-btn" id="lockBtn" title="Lock">🔒</button></div>
  </div>
  <nav class="tabs" id="tabs">
@@ -165,7 +165,7 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
-const APP_VERSION='7.2.0';
+const APP_VERSION='7.2.1';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
 const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
@@ -224,7 +224,7 @@ async function subscribeCloud(){
 }
 function itemTime(x){return Date.parse(x?.updatedAt||x?.date||0)||0}
 function mergeDeleted(localMap={},remoteMap={}){const out={...remoteMap};for(const [id,stamp] of Object.entries(localMap||{})){if((Date.parse(stamp)||0)>=(Date.parse(out[id])||0))out[id]=stamp}return out}
-function mergeArray(local=[],remote=[],deleted={}){const map=new Map();for(const x of [...remote,...local]){if(!x||!x.id)continue;const old=map.get(x.id);if(!old||itemTime(x)>=itemTime(old))map.set(x.id,x)}for(const [id,stamp] of Object.entries(deleted||{})){const item=map.get(id);if(!item||(Date.parse(stamp)||0)>=itemTime(item))map.delete(id)}return [...map.values()]}
+function mergeArray(local=[],remote=[],deleted={}){const map=new Map();for(const x of [...remote,...local]){if(!x||!x.id)continue;const old=map.get(x.id);if(!old||itemTime(x)>=itemTime(old))map.set(x.id,x)}for(const id of Object.keys(deleted||{}))map.delete(id)return [...map.values()]}
 function mergeCatalog(local,remote){
  const localTime=Date.parse(local?.meta?.updatedAt||0)||0,remoteTime=Date.parse(remote?.meta?.updatedAt||0)||0;
  const deletedFirearms=mergeDeleted(local?.meta?.deletedFirearms,remote?.meta?.deletedFirearms);
@@ -296,7 +296,7 @@ async function commitCloudState(actionLabel='Changes'){
   for(const [key,listKey] of [['deletedFirearms','firearms'],['deletedAmmo','ammo'],['deletedMaintenance','maintenance']]){
    const tombstones=state.meta?.[key]||{};
    merged.meta={...(merged.meta||{}),[key]:mergeDeleted(merged.meta?.[key],tombstones)};
-   merged[listKey]=(merged[listKey]||[]).filter(item=>!tombstones[item.id] || (Date.parse(item.updatedAt||item.date||0)||0)>(Date.parse(tombstones[item.id])||0));
+   merged[listKey]=(merged[listKey]||[]).filter(item=>!tombstones[item.id]);
   }
   const stamp=await writeCloud(merged);
   const verify=await readCloud();
