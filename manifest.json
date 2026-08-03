@@ -1,8 +1,8 @@
 {
-  "name": "Firearm Catalog V7.2.3.1 Professional",
-  "short_name": "Catalog V7.2.3",
+  "name": "Firearm Catalog V8 Professional",
+  "short_name": "Catalog V8",
   "description": "Professional private inventory with photos, accessories, ammunition, maintenance, reports, backups and secure cloud synchronization",
-  "start_url": "./?v=7.2.0",
+  "start_url": "./?v=800",
   "scope": "./",
   "display": "standalone",
   "background_color": "#eef2f7",

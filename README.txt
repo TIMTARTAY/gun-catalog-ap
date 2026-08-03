@@ -1,13 +1,20 @@
-Firearm Catalog V7.2.3
+Firearm Catalog V8.0.0 — Complete Rebuild
 
-FIXED
-- Firearm deletion now sends an exact cloud overwrite instead of merging with the old cloud copy.
-- The app verifies that the deleted firearm ID is absent from Supabase before showing success.
-- If Supabase still contains it, the app shows a real cloud error instead of a false success message.
+WHAT CHANGED
+- The real application code is now in app.js.
+- The real styling is now in app.css.
+- index.html loads those files directly.
+- Edit, delete, and other saves replace the user's complete Supabase catalog row.
+- Each cloud write is read back and verified before success is shown.
+- A new service-worker cache forces devices to load V8 files.
 
 INSTALL
-1. Upload and replace all repository files.
-2. Commit message: V7.2.3 Force cloud delete
-3. Wait about two minutes.
-4. Refresh twice and confirm V7.2.3 Professional.
-5. Delete the test firearm.
+1. Export a backup from the app first.
+2. Upload every file in this ZIP to the repository root.
+3. Replace the existing files, including app.js and app.css.
+4. Commit message: V8 complete rebuild
+5. Wait about two minutes.
+6. Open the website and refresh twice.
+7. Confirm the heading says Firearm Catalog V8 Professional.
+8. Sign in and tap Sync Now.
+9. Test editing and deleting the test firearm.
