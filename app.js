@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='8.0.1';
+const APP_VERSION='8.0.2';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
 const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
@@ -43,7 +43,51 @@ function renderCloudAccount(){
  }
  $('signOutBtn')?.classList.toggle('hidden',!cloudUser)
 }
-async function initCloud(){const cfg=cloudConfig();if(!cfg?.url||!cfg?.key||!window.supabase){renderCloudAccount();return}try{cloudClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data:{session}}=await cloudClient.auth.getSession();cloudUser=session?.user||null;let authReady=false;cloudClient.auth.onAuthStateChange(async(event,session)=>{cloudUser=session?.user||null;renderCloudAccount();if(!cloudUser)return;if(event==='TOKEN_REFRESHED'||event==='USER_UPDATED')return;if(authReady&&event==='INITIAL_SESSION')return;authReady=true;await subscribeCloud();await safeCloudSync(false)});renderCloudAccount();if(cloudUser){authReady=true;await subscribeCloud();await safeCloudSync(false)}}catch(e){console.error(e);setSyncStatus('Cloud error','err');$('cloudAccountInfo').textContent='Connection error: '+e.message}}
+let authRecoveryInProgress=false;
+async function recoverCloudSession(syncAfter=false){
+ if(!cloudClient||authRecoveryInProgress)return cloudUser;
+ authRecoveryInProgress=true;
+ try{
+  const {data,error}=await cloudClient.auth.getSession();
+  if(error)throw error;
+  const session=data?.session||null;
+  cloudUser=session?.user||null;
+  renderCloudAccount();
+  if(cloudUser){
+   await subscribeCloud();
+   if(syncAfter&&navigator.onLine)await safeCloudSync(false);
+  }
+  return cloudUser;
+ }catch(e){
+  console.error('Session recovery failed:',e);
+  setSyncStatus(navigator.onLine?'Sign-in check failed':'Offline',navigator.onLine?'err':'warn');
+  return null;
+ }finally{authRecoveryInProgress=false}
+}
+async function initCloud(){
+ const cfg=cloudConfig();
+ if(!cfg?.url||!cfg?.key||!window.supabase){renderCloudAccount();return}
+ try{
+  const projectRef=(new URL(cfg.url)).hostname.split('.')[0];
+  cloudClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{
+   persistSession:true,
+   autoRefreshToken:true,
+   detectSessionInUrl:true,
+   storage:window.localStorage,
+   storageKey:`fc-${projectRef}-auth-token`,
+   flowType:'pkce'
+  }});
+  cloudClient.auth.onAuthStateChange(async(event,session)=>{
+   cloudUser=session?.user||null;
+   renderCloudAccount();
+   if(event==='SIGNED_OUT'||!cloudUser)return;
+   if(event==='TOKEN_REFRESHED'||event==='USER_UPDATED')return;
+   await subscribeCloud();
+   if(event==='SIGNED_IN'||event==='INITIAL_SESSION')await safeCloudSync(false);
+  });
+  await recoverCloudSession(true);
+ }catch(e){console.error(e);setSyncStatus('Cloud error','err');$('cloudAccountInfo').textContent='Connection error: '+e.message}
+}
 async function subscribeCloud(){
  if(!cloudClient||!cloudUser)return;
  if(cloudChannel)await cloudClient.removeChannel(cloudChannel);
@@ -299,7 +343,10 @@ $('cloudSignInBtn').onclick=async()=>{if(!cloudClient)return alert('Save the Sup
 $('cloudSignUpBtn').onclick=async()=>{if(!cloudClient)return alert('Save the Supabase connection first.');const email=$('cloudEmail').value.trim(),password=$('cloudPassword').value;if(password.length<6)return alert('Use a password with at least 6 characters.');const {error}=await cloudClient.auth.signUp({email,password});if(error)return alert(error.message);alert('Account created. Check your email if confirmation is enabled, then sign in.')};
 $('syncNowBtn').onclick=async()=>{if(!cloudUser)return $('cloudModal').classList.remove('hidden');await safeCloudSync(true)};
 $('signOutBtn').onclick=async()=>{if(cloudClient){await cloudClient.auth.signOut();cloudUser=null;renderCloudAccount();toast('Signed out.')}};
-window.addEventListener('online',()=>{renderCloudAccount();if(cloudUser)safeCloudSync(false)});window.addEventListener('offline',()=>setSyncStatus('Offline','warn'));
+window.addEventListener('online',async()=>{renderCloudAccount();await recoverCloudSession(true)});
+window.addEventListener('offline',()=>setSyncStatus('Offline','warn'));
+window.addEventListener('focus',()=>recoverCloudSession(false));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')recoverCloudSession(false)});
 
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(console.error));
 load();
