@@ -1,20 +1,15 @@
-Firearm Catalog V7.2.1
+Firearm Catalog V7.2.2
 
 FIXED
-- A cloud copy can no longer override a deletion because of timestamp differences.
-- Deletion markers now always remove the matching record on every synced device.
-- A deleted record is restored only when it is intentionally saved again.
-- The service worker uses a new V7.2.1 cache.
+- Repairs the JavaScript syntax error in V7.2.1 that disabled every button.
+- Keeps the authoritative deletion-marker fix.
+- Uses a new cache name so devices load the corrected files.
 
 INSTALL
 1. Upload every file in this ZIP to the root of the GitHub repository.
 2. Replace the existing files.
-3. Commit message: V7.2.1 Fix cloud delete
+3. Commit message: V7.2.2 Fix all buttons
 4. Wait about two minutes for GitHub Pages to deploy.
-5. Open the website on each device and refresh twice.
-6. Confirm the heading says Firearm Catalog V7.2.1 Professional.
-7. Sign in with the same account and tap Sync Now.
-8. Delete the test firearm and then tap Sync Now on the other devices.
-
-IMPORTANT
-Export a backup before replacing the files.
+5. Open the website and refresh twice.
+6. Confirm the heading says Firearm Catalog V7.2.2 Professional.
+7. Test Dashboard, Inventory, View/Edit, and Delete.
