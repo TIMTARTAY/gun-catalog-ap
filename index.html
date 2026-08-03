@@ -40,7 +40,7 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <body>
 <header class="app-header">
  <div class="header-row">
-  <div class="brand"><h1>Firearm Catalog V7 Professional</h1><p>Private collection with secure multi-device sync</p></div>
+  <div class="brand"><h1>Firearm Catalog V7.2 Professional</h1><p>Private collection with secure multi-device sync</p></div>
   <div class="head-buttons"><button class="sync-pill" id="syncStatus" title="Cloud sync status">Local only</button><button class="icon-btn" id="themeBtn" title="Theme">◐</button><button class="icon-btn" id="lockBtn" title="Lock">🔒</button></div>
  </div>
  <nav class="tabs" id="tabs">
@@ -165,7 +165,7 @@ input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
-const APP_VERSION='7.1.3';
+const APP_VERSION='7.2.0';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
 const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
@@ -283,7 +283,30 @@ async function safeCloudSync(showToast=true){
  finally{syncInProgress=false}
 }
 function scheduleCloudSave(){if(!cloudClient||!cloudUser)return;clearTimeout(syncTimer);setSyncStatus('Saving…','warn');syncTimer=setTimeout(()=>safeCloudSync(false),900)}
-async function pushCloud(){return safeCloudSync(false)}
+async function commitCloudState(actionLabel='Changes'){
+ if(!cloudClient||!cloudUser)return false;
+ clearTimeout(syncTimer);
+ if(syncInProgress){await new Promise(r=>setTimeout(r,350));if(syncInProgress)return false}
+ syncInProgress=true;setSyncStatus('Saving…','warn');
+ try{
+  const row=await readCloud();
+  const remote=row?.data||null;
+  const merged=remote?mergeCatalog(structuredClone(state),remote):structuredClone(state);
+  // Re-apply local deletion tombstones after merging so cloud copies cannot return.
+  for(const [key,listKey] of [['deletedFirearms','firearms'],['deletedAmmo','ammo'],['deletedMaintenance','maintenance']]){
+   const tombstones=state.meta?.[key]||{};
+   merged.meta={...(merged.meta||{}),[key]:mergeDeleted(merged.meta?.[key],tombstones)};
+   merged[listKey]=(merged[listKey]||[]).filter(item=>!tombstones[item.id] || (Date.parse(item.updatedAt||item.date||0)||0)>(Date.parse(tombstones[item.id])||0));
+  }
+  const stamp=await writeCloud(merged);
+  const verify=await readCloud();
+  if(!verify?.data)throw new Error('Cloud verification failed.');
+  applyCloudCatalog(verify.data,verify.updated_at||stamp,false);
+  localDirty=false;setSyncStatus('Synced','ok');renderCloudAccount();return true;
+ }catch(e){console.error(e);localDirty=true;setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn');$('cloudAccountInfo').textContent=`${actionLabel} saved on this device, but cloud sync failed: ${e.message}`;return false}
+ finally{syncInProgress=false}
+}
+async function pushCloud(){return commitCloudState('Changes')}
 async function pullCloud(showToast=true){return safeCloudSync(showToast)}
 
 function load(){
@@ -345,7 +368,7 @@ function resetFirearm(){
 window.openFirearm=()=>{resetFirearm();$('firearmModal').classList.remove('hidden')};
 window.viewFirearm=id=>{const f=state.firearms.find(x=>x.id===id);if(!f)return;resetFirearm();$('firearmModalTitle').textContent='Edit Firearm';$('firearmId').value=f.id;const map={fType:'type',fCondition:'condition',fMake:'make',fModel:'model',fSerial:'serial',fCaliber:'caliber',fPurchaseDate:'purchaseDate',fPurchasePrice:'purchasePrice',fValue:'value',fLocation:'location',fSource:'source',fStatus:'status',fNotes:'notes'};for(const [id,k] of Object.entries(map))$(id).value=f[k]??'';accessoryDraft=structuredClone(f.accessories||[]);photoDraft=structuredClone(f.photos||[]);docDraft=structuredClone(f.docs||[]);renderDrafts();$('firearmModal').classList.remove('hidden')};
 window.duplicateFirearm=id=>{const f=state.firearms.find(x=>x.id===id);if(!f)return;const copy=structuredClone(f);copy.id=uid();copy.serial='';copy.model+=' (Copy)';copy.createdAt=copy.updatedAt=new Date().toISOString();state.firearms.push(copy);save();toast('Item duplicated. Add the correct serial number.')};
-window.deleteFirearm=async id=>{if(confirm('Delete this firearm and its linked records?')){const stamp=new Date().toISOString();state.meta={...(state.meta||{}),deletedFirearms:{...(state.meta?.deletedFirearms||{}),[id]:stamp}};const linked=state.maintenance.filter(x=>x.firearmId===id).map(x=>x.id);if(linked.length){state.meta.deletedMaintenance={...(state.meta.deletedMaintenance||{})};linked.forEach(mid=>state.meta.deletedMaintenance[mid]=stamp)}state.firearms=state.firearms.filter(x=>x.id!==id);state.maintenance=state.maintenance.filter(x=>x.firearmId!==id);if(!save())return;toast('Firearm deleted on this device.');if(cloudUser){const ok=await pushCloud();toast(ok?'Firearm deleted and synced.':'Deleted locally. Cloud sync will retry.')}}};
+window.deleteFirearm=async id=>{if(confirm('Delete this firearm and its linked records?')){clearTimeout(syncTimer);const stamp=new Date().toISOString();state.meta={...(state.meta||{}),deletedFirearms:{...(state.meta?.deletedFirearms||{}),[id]:stamp}};const linked=state.maintenance.filter(x=>x.firearmId===id).map(x=>x.id);if(linked.length){state.meta.deletedMaintenance={...(state.meta.deletedMaintenance||{})};linked.forEach(mid=>state.meta.deletedMaintenance[mid]=stamp)}state.firearms=state.firearms.filter(x=>x.id!==id);state.maintenance=state.maintenance.filter(x=>x.firearmId!==id);if(!save())return;clearTimeout(syncTimer);renderAll();if(cloudUser){const ok=await commitCloudState('Firearm deletion');toast(ok?'Firearm deleted from every synced device.':'Deleted on this device only. Open Backup & Security to see the cloud error.')}else toast('Firearm deleted on this device.')}};
 $('addAccessoryBtn').onclick=()=>{const name=$('accName').value.trim();if(!name)return alert('Enter the accessory make/model.');accessoryDraft.push({id:uid(),type:$('accType').value,name,serial:$('accSerial').value.trim(),value:Number($('accValue').value||0)});$('accName').value=$('accSerial').value=$('accValue').value='';renderDrafts()};
 function renderDrafts(){
  $('accessoryDraft').innerHTML=accessoryDraft.map((a,i)=>`<div class="file-chip"><span><b>${esc(a.type)}:</b> ${esc(a.name)} ${a.serial?`— ${esc(a.serial)}`:''}</span><button class="btn danger small" type="button" onclick="removeAcc(${i})">Remove</button></div>`).join('');
@@ -357,7 +380,7 @@ window.downloadDoc=i=>{const d=docDraft[i],a=document.createElement('a');a.href=
 function readFile(file,max=2500000){return new Promise((resolve,reject)=>{if(file.size>max)return reject(new Error(`${file.name} is too large. Maximum is ${Math.round(max/1e6)} MB.`));const r=new FileReader();r.onload=()=>resolve({id:uid(),name:file.name,type:file.type,size:file.size,data:r.result});r.onerror=reject;r.readAsDataURL(file)})}
 $('fPhotos').onchange=async e=>{try{for(const f of e.target.files)photoDraft.push(await readFile(f,3500000));renderDrafts()}catch(err){alert(err.message)}e.target.value=''};
 $('fDocs').onchange=async e=>{try{for(const f of e.target.files)docDraft.push(await readFile(f,5000000));renderDrafts()}catch(err){alert(err.message)}e.target.value=''};
-$('firearmForm').onsubmit=async e=>{e.preventDefault();const id=$('firearmId').value||uid(),old=state.firearms.find(f=>f.id===id);const f={id,type:$('fType').value,condition:$('fCondition').value,make:$('fMake').value.trim(),model:$('fModel').value.trim(),serial:$('fSerial').value.trim(),caliber:$('fCaliber').value.trim(),purchaseDate:$('fPurchaseDate').value,purchasePrice:Number($('fPurchasePrice').value||0),value:Number($('fValue').value||0),location:$('fLocation').value.trim(),source:$('fSource').value.trim(),status:$('fStatus').value,notes:$('fNotes').value.trim(),accessories:structuredClone(accessoryDraft),photos:structuredClone(photoDraft),docs:structuredClone(docDraft),createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};const duplicate=state.firearms.find(x=>x.id!==id&&f.serial&&x.serial.toLowerCase()===f.serial.toLowerCase());if(duplicate&&!confirm('Another item uses this serial number. Save anyway?'))return;const i=state.firearms.findIndex(x=>x.id===id);i>=0?state.firearms[i]=f:state.firearms.push(f);if(state.meta?.deletedFirearms?.[id])delete state.meta.deletedFirearms[id];if(!save())return;closeModal('firearmModal');goPage('inventory');toast('Firearm saved on this device.');if(cloudUser){const ok=await pushCloud();toast(ok?'Firearm saved and synced.':'Saved locally. Cloud sync will retry.')}};
+$('firearmForm').onsubmit=async e=>{e.preventDefault();const id=$('firearmId').value||uid(),old=state.firearms.find(f=>f.id===id);const f={id,type:$('fType').value,condition:$('fCondition').value,make:$('fMake').value.trim(),model:$('fModel').value.trim(),serial:$('fSerial').value.trim(),caliber:$('fCaliber').value.trim(),purchaseDate:$('fPurchaseDate').value,purchasePrice:Number($('fPurchasePrice').value||0),value:Number($('fValue').value||0),location:$('fLocation').value.trim(),source:$('fSource').value.trim(),status:$('fStatus').value,notes:$('fNotes').value.trim(),accessories:structuredClone(accessoryDraft),photos:structuredClone(photoDraft),docs:structuredClone(docDraft),createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};const duplicate=state.firearms.find(x=>x.id!==id&&f.serial&&x.serial.toLowerCase()===f.serial.toLowerCase());if(duplicate&&!confirm('Another item uses this serial number. Save anyway?'))return;const i=state.firearms.findIndex(x=>x.id===id);i>=0?state.firearms[i]=f:state.firearms.push(f);if(state.meta?.deletedFirearms?.[id])delete state.meta.deletedFirearms[id];if(!save())return;closeModal('firearmModal');goPage('inventory');toast('Firearm saved on this device.');if(cloudUser){clearTimeout(syncTimer);const ok=await commitCloudState('Firearm update');toast(ok?'Firearm saved and synced.':'Saved on this device only. Open Backup & Security to see the cloud error.')}};
 function renderAmmo(){const q=$('searchAmmo').value.toLowerCase();const list=state.ammo.filter(a=>JSON.stringify(a).toLowerCase().includes(q)).sort((a,b)=>a.caliber.localeCompare(b.caliber));const rounds=state.ammo.reduce((n,a)=>n+Number(a.qty),0);$('ammoSummary').textContent=`${rounds.toLocaleString()} rounds in ${state.ammo.length} entries`;$('ammoList').innerHTML=list.length?list.map(a=>`<div class="item-card"><div class="item-title">${esc(a.caliber)} — ${esc(a.brand||'Unbranded')}</div><span class="badge">${esc(a.type||'Unspecified')}</span><div class="item-details"><div><b>Quantity</b>${Number(a.qty).toLocaleString()}</div><div><b>Lot</b>${esc(a.lot||'Not entered')}</div><div><b>Location</b>${esc(a.location||'Not entered')}</div></div><div class="item-actions"><button class="btn small" onclick="editAmmo('${a.id}')">Edit</button><button class="btn danger small" onclick="deleteAmmo('${a.id}')">Delete</button></div></div>`).join(''):'<div class="card empty">No ammunition records.</div>'}
 $('searchAmmo').oninput=renderAmmo;
 window.openAmmo=()=>{$('ammoForm').reset();$('ammoId').value='';$('ammoModalTitle').textContent='Add Ammunition';$('ammoModal').classList.remove('hidden')};

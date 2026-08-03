@@ -1,23 +1,20 @@
-Firearm Catalog V7.1.3
-Fixes repeated Checking/Synced status flicker by preventing background sync feedback loops.
+Firearm Catalog V7.2.0
 
-Firearm Catalog V7.1 Professional
+FIXED
+- Firearm edits are merged, written to Supabase, and verified before showing success.
+- Firearm deletions use deletion tombstones and are re-applied after cloud merge so deleted records cannot be restored.
+- Cloud errors are shown in Backup & Security instead of reporting a false success.
+- The service worker uses a new V7.2 cache and always checks the network for the app page.
+- The heading and storage information clearly show V7.2.0.
 
-WHAT IS FIXED
-- Safe two-way cloud synchronization across phones and tablets.
-- An empty device automatically downloads the existing cloud inventory.
-- An empty device will not overwrite a cloud catalog containing records.
-- Devices with records safely merge inventory by record ID and last-updated time.
-- Sync status now shows local record counts and the last cloud-sync time.
-- Manual Sync Now performs a safe comparison instead of blindly uploading.
-
-INSTALL / UPDATE
-1. Upload every file in this ZIP to the root of the existing GitHub repository.
-2. Replace the older files when prompted.
-3. Commit with: Upgrade to Firearm Catalog V7.1 cloud sync
-4. On each device, open Backup & Security and tap Update App, or refresh the website twice.
-5. Confirm the heading shows Firearm Catalog V7 Professional and Backup & Security shows App version 7.1.1.
-6. Sign into the same account and tap Sync Now.
+INSTALL
+1. Upload all files in this ZIP to the root of the GitHub repository.
+2. Replace the existing files.
+3. Commit message: Release V7.2.0 - Fix cloud edit delete and multi-device sync
+4. Wait about two minutes for GitHub Pages to deploy.
+5. Open the website on each device and refresh twice.
+6. Confirm the heading says Firearm Catalog V7.2 Professional.
+7. Sign in with the same account and tap Sync Now.
 
 IMPORTANT
-Make an Export Backup from the phone that currently contains the inventory before updating.
+Export a backup from the device holding the correct inventory before installing.
