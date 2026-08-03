@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='8.0.0';
+const APP_VERSION='8.0.1';
 const STORE_KEY='firearmCatalogV5';
 const CLOUD_CONFIG_KEY='firearmCatalogCloudConfigV1';
 const DEFAULT_CLOUD_CONFIG={url:'https://pffjakkbrhaoqmheqogx.supabase.co',key:'sb_publishable_uXnq4YVP4FwehfzjPzk2oQ_qvJuWEBS'};
@@ -86,6 +86,14 @@ async function pullCloudOnly(){
  }catch(e){console.error(e);setSyncStatus(navigator.onLine?'Sync error':'Offline',navigator.onLine?'err':'warn');return false}
  finally{syncInProgress=false}
 }
+function stableJson(value){
+ if(Array.isArray(value))return '['+value.map(stableJson).join(',')+']';
+ if(value&&typeof value==='object'){
+  return '{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stableJson(value[key])).join(',')+'}';
+ }
+ return JSON.stringify(value);
+}
+
 async function exactCloudWrite(actionLabel='Changes'){
  if(!cloudClient||!cloudUser)return false;
  clearTimeout(syncTimer);
@@ -97,8 +105,8 @@ async function exactCloudWrite(actionLabel='Changes'){
   const stamp=await writeCloud(exact);
   const verify=await readCloud();
   if(!verify?.data)throw new Error('Supabase did not return the saved catalog.');
-  const localJson=JSON.stringify(exact);
-  const cloudJson=JSON.stringify(verify.data);
+  const localJson=stableJson(exact);
+  const cloudJson=stableJson(verify.data);
   if(localJson!==cloudJson)throw new Error('Cloud verification did not match this device.');
   applyCloudCatalog(verify.data,verify.updated_at||stamp,false);
   localDirty=false;

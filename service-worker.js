@@ -1,9 +1,9 @@
-const CACHE_NAME = "firearm-catalog-v8-2026-08-03-1";
+const CACHE_NAME = "firearm-catalog-v8-0-1-2026-08-03-1";
 const FILES = [
   "./",
   "./index.html",
-  "./app.css?v=800",
-  "./app.js?v=800",
+  "./app.css?v=801",
+  "./app.js?v=801",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"

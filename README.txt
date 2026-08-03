@@ -1,20 +1,15 @@
-Firearm Catalog V8.0.0 — Complete Rebuild
+Firearm Catalog V8.0.1
 
-WHAT CHANGED
-- The real application code is now in app.js.
-- The real styling is now in app.css.
-- index.html loads those files directly.
-- Edit, delete, and other saves replace the user's complete Supabase catalog row.
-- Each cloud write is read back and verified before success is shown.
-- A new service-worker cache forces devices to load V8 files.
+FIXED
+- Supabase may return JSON object keys in a different order.
+- V8 incorrectly treated that harmless key-order difference as a failed sync.
+- V8.0.1 compares normalized JSON, so successful cloud saves show Synced.
+- Uses a new cache to force every device to load the correction.
 
 INSTALL
-1. Export a backup from the app first.
-2. Upload every file in this ZIP to the repository root.
-3. Replace the existing files, including app.js and app.css.
-4. Commit message: V8 complete rebuild
-5. Wait about two minutes.
-6. Open the website and refresh twice.
-7. Confirm the heading says Firearm Catalog V8 Professional.
-8. Sign in and tap Sync Now.
-9. Test editing and deleting the test firearm.
+1. Upload and replace every file in the repository.
+2. Commit message: V8.0.1 Fix sync check
+3. Wait about two minutes.
+4. Refresh the app twice.
+5. Confirm V8.0.1 Professional.
+6. Tap Sync Now.
